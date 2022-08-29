@@ -1,0 +1,88 @@
+{
+  "name": "CIA-SAC-ACS",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "$ignoreUnknownInstances": true,
+      "Common": {
+        "$path": "src/shared"
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$ignoreUnknownInstances": true,
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "src/client/player",
+        "$ignoreUnknownInstances": true
+      },
+      
+      "StarterCharacterScripts": {
+          "$className": "StarterCharacterScripts",
+          "$path": "src/client/character",
+          "$ignoreUnknownInstances": true
+        }
+    },
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "FilteringEnabled": true
+      },
+      "Baseplate": {
+        "$className": "Part",
+        "$properties": {
+          "Anchored": true,
+          "Color": [
+            0.38823,
+            0.37254,
+            0.38823
+          ],
+          "Locked": true,
+          "Position": [
+            0,
+            -10,
+            0
+          ],
+          "Size": [
+            512,
+            20,
+            512
+          ]
+        }
+      }
+    },
+    "Lighting": {
+      "$className": "Lighting",
+      "$properties": {
+        "Ambient": [
+          0,
+          0,
+          0
+        ],
+        "Brightness": 2,
+        "GlobalShadows": true,
+        "Outlines": false,
+        "Technology": "ShadowMap"
+      }
+    },
+    "SoundService": {
+      "$className": "SoundService",
+      "$ignoreUnknownInstances": true,
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    }
+  }
+}
