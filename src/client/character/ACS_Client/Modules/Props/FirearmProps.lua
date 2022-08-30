@@ -8,7 +8,7 @@ return {
     UnderBarrelAttachment   = nil,
     OtherAttachment         = nil,
     LaserAttachment         = false,
-    TorchAttachment         = false,   
+    TorchAttachment         = false,
     BipodAttachment = false,
     
     LaserDist = 0,
