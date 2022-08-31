@@ -3,44 +3,175 @@ local Players = game:GetService("Players")
 local ReplicatedStorage= game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
---=====
-local Modules = script.Parent.Parent
-local States = Modules.States
-local FirearmState = require(States.FirearmState)
-local ViewModelState = require(States.ViewModelState)
-local CharacterState = require(States.CharacterState)
-local InputState	= require(States.InputState)
+local CAS = game:GetService("ContextActionService")
 
-local Props = Modules.Props
-local FirearmProps = require(Props.FirearmProps)
-
-local CalculateBulletSpread = require(Modules.Others.CalculateBulletSpread)
-
-local Player = Players.LocalPlayer
+local Player   = Players.LocalPlayer
 local Character = Player.Character
+--=====
+local ACSClient:Folder  = script.Parent.Parent.Parent
+local Modules:Folder 	= ACSClient.Modules
+local HandleAction		= require(Modules.HandleAction)
+
+local Actions:Folder	= Modules.Actions
+local PlayAnimation		= require(Actions.PlayAnimation)
+
+local States:Folder 	= Modules.States
+local FirearmState 		= require(States.FirearmState)
+local ViewModelState 	= require(States.ViewModelState)
+local CharacterState 	= require(States.CharacterState)
+local InputState		= require(States.InputState)
+
+local Props:Folder		= Modules.Props
+local FirearmProps 		= require(Props.FirearmProps)
+
+local Others:Folder 		= Modules.Others
+local CalculateBulletSpread = require(Others.CalculateBulletSpread)
+local ModTable 				= require(Others.ModTable)
+local RunCheck				= require(Others.RunCheck)
+
 local Camera = workspace.CurrentCamera
 --=====
 local ACS_Workspace = workspace:FindFirstChild("ACS_WorkSpace")
 local Engine 		= ReplicatedStorage:FindFirstChild("ACS_Engine")
-local Events 				= Engine:FindFirstChild("Events")
+local Events 		= Engine:FindFirstChild("Events")
 local Mods 			= Engine:FindFirstChild("Modules")
-local HUDs 					= Engine:FindFirstChild("HUD")
-local Essential 			= Engine:FindFirstChild("Essential")
-local ArmModel 				= Engine:FindFirstChild("ArmModel")
-local GunModels 			= Engine:FindFirstChild("GunModels")
-local AttModels 			= Engine:FindFirstChild("AttModels")
-local AttModules  			= Engine:FindFirstChild("AttModules")
+local HUDs 			= Engine:FindFirstChild("HUD")
+local Essential 	= Engine:FindFirstChild("Essential")
+local ArmModel 		= Engine:FindFirstChild("ArmModel")
+local GunModels 	= Engine:FindFirstChild("GunModels")
+local AttModels 	= Engine:FindFirstChild("AttModels")
+local AttModules  	= Engine:FindFirstChild("AttModules")
 local Rules			= Engine:FindFirstChild("GameRules")
 local PastaFx		= Engine:FindFirstChild("FX")
-
 local gameRules		         = require(Rules:WaitForChild("Config"))
 local SpringMod 	         = require(Mods:WaitForChild("Spring"))
 local HitMod 		         = require(Mods:WaitForChild("Hitmarker"))
 local Thread 		         = require(Mods:WaitForChild("Thread"))
 local Ultil			         = require(Mods:WaitForChild("Utilities"))
-local ACS_Client 	= Player.Character:WaitForChild("ACS_Client")
 --=========================================================
 local WeaponAction = {}
+
+function WeaponAction:UpdateGui()
+	if SE_GUI then
+		local HUD = SE_GUI.GunHUD
+
+		if WeaponData ~= nil then
+
+			--[[if Settings.ArcadeMode == true then
+				HUD.Ammo.Visible = true
+				HUD.Ammo.AText.Text = Ammo.Value.."|"..Settings.Ammo
+			else
+				HUD.Ammo.Visible = false
+			end]]
+
+			--[[if Settings.FireModes.Explosive == true and GLChambered.Value == true then
+				HUD.E.ImageColor3 = Color3.fromRGB(255,255,255)
+				HUD.E.Visible = true
+			elseif Settings.FireModes.Explosive == true and GLChambered.Value == false then
+				HUD.E.ImageColor3 = Color3.fromRGB(255,0,0)
+				HUD.E.Visible = true
+			elseif Settings.FireModes.Explosive == false then
+				HUD.E.Visible = false
+			end]]
+
+			if WeaponData.Jammed then
+				HUD.B.BackgroundColor3 = Color3.fromRGB(255,0,0)
+			else
+				HUD.B.BackgroundColor3 = Color3.fromRGB(255,255,255)
+			end
+
+			if SafeMode then
+				HUD.A.Visible = true
+			else
+				HUD.A.Visible = false
+			end
+
+			if Ammo > 0 then
+				HUD.B.Visible = true
+			else
+				HUD.B.Visible = false
+			end
+
+			if WeaponData.ShootType == 1 then
+				HUD.FText.Text = "Semi"
+			elseif WeaponData.ShootType == 2 then
+				HUD.FText.Text = "Burst"
+			elseif WeaponData.ShootType == 3 then
+				HUD.FText.Text = "Auto"
+			elseif WeaponData.ShootType == 4 then
+				HUD.FText.Text = "Pump-Action"
+			elseif WeaponData.ShootType == 5 then
+				HUD.FText.Text = "Bolt-Action"
+			end
+
+			HUD.Sens.Text = (Sens/100)
+			HUD.BText.Text = WeaponData.BulletType
+			HUD.NText.Text = WeaponData.gunName
+
+			if WeaponData.EnableZeroing then
+				HUD.ZeText.Visible = true
+				HUD.ZeText.Text = WeaponData.CurrentZero .." m"
+			else
+				HUD.ZeText.Visible = false
+			end
+
+			if WeaponData.MagCount then
+				HUD.SAText.Text = math.ceil(StoredAmmo/WeaponData.Ammo)
+				HUD.Magazines.Visible = true
+				HUD.Bullets.Visible = false
+			else
+				HUD.SAText.Text = StoredAmmo
+				HUD.Magazines.Visible = false
+				HUD.Bullets.Visible = true
+			end
+
+			if Suppressor then
+				HUD.Att.Silencer.Visible = true
+			else
+				HUD.Att.Silencer.Visible = false
+			end
+
+
+			if LaserAttachment then
+				HUD.Att.Laser.Visible = true
+				if LaserActive then
+					if IRmode then
+						TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(0,255,0), ImageTransparency = .123}):Play()
+					else
+						TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,255,255), ImageTransparency = .123}):Play()
+					end
+				else
+					TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,0,0), ImageTransparency = .5}):Play()
+				end
+			else
+				HUD.Att.Laser.Visible = false
+			end
+
+			if BipodAtt then
+				HUD.Att.Bipod.Visible = true
+			else
+				HUD.Att.Bipod.Visible = false
+			end
+
+			if FlashLightAttachment then
+				HUD.Att.Flash.Visible = true
+				if FlashLightActive then
+					TS:Create(HUD.Att.Flash, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,255,255), ImageTransparency = .123}):Play()
+				else
+					TS:Create(HUD.Att.Flash, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,0,0), ImageTransparency = .5}):Play()
+				end
+			else
+				HUD.Att.Flash.Visible = false
+			end
+
+			if WeaponData.Type == "Grenade" then
+				SE_GUI.GrenadeForce.Visible = true
+			else
+				SE_GUI.GrenadeForce.Visible = false
+			end
+		end
+	end
+end
 
 function WeaponAction:CreateBullet(weaponData)
 
@@ -237,7 +368,7 @@ function WeaponAction:Shoot(weaponData)
 				GunFx()
 				UpdateGui()
 				task.spawn(Recoil)
-				PumpAnim()
+				PlayAnimation:PumpAnim()
 				RunCheck()
 				FirearmState.Shooting = false
 
@@ -276,6 +407,15 @@ function WeaponAction:Setup(tool)
 		ViewModelState.ViewModel = ArmModel:WaitForChild("Arms"):Clone()
 		ViewModelState.ViewModel.Name = "Viewmodel"
 
+		local humanoid = Character:FindFirstChild("Humanoid")
+		local humanoidDesc = humanoid:GetAppliedDescription()
+		local viewModelHumanoid = ViewModelState.ViewModel:FindFirstChildOfClass("Humanoid")
+		viewModelHumanoid:ApplyDescriptionReset(humanoidDesc)
+		
+		--[[ 
+			line 283-288 basically replaced this entire blacked out part
+			of course... under the assumption that the game is using HumanoidDescription based setup
+			
 		if Character:FindFirstChild("Body Colors") ~= nil then
 			local Colors = Character:WaitForChild("Body Colors"):Clone()
 			Colors.Parent = ViewModelState.ViewModel
@@ -285,7 +425,9 @@ function WeaponAction:Setup(tool)
 			local Shirt = Character:FindFirstChild("Shirt"):Clone()
 			Shirt.Parent = ViewModelState.ViewModel
 		end
-
+		]]
+		
+		-- set up arms
 		ViewModelState.AnimPart = Instance.new("Part",ViewModelState.ViewModel)
 		ViewModelState.AnimPart.Size = Vector3.new(0.1,0.1,0.1)
 		ViewModelState.AnimPart.Anchored = true
@@ -314,38 +456,6 @@ function WeaponAction:Setup(tool)
 		ViewModelState.LArmCFrame = ViewModelState.AnimData.LArmCFrame
 		ViewModelState.RArmCFrame = ViewModelState.AnimData.RArmCFrame
 
-
-		if  FirearmProps.WeaponData.CrossHair then
-			TS:Create(Crosshair.Up, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-			TS:Create(Crosshair.Down, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-			TS:Create(Crosshair.Left, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-			TS:Create(Crosshair.Right, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()	
-
-			if WeaponData.Bullets > 1 then
-				Crosshair.Up.Rotation = 90
-				Crosshair.Down.Rotation = 90
-				Crosshair.Left.Rotation = 90
-				Crosshair.Right.Rotation = 90
-			else
-				Crosshair.Up.Rotation = 0
-				Crosshair.Down.Rotation = 0
-				Crosshair.Left.Rotation = 0
-				Crosshair.Right.Rotation = 0
-			end
-
-		else
-			TS:Create(Crosshair.Up, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Down, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Left, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Right, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-		end
-
-		if  FirearmProps.WeaponData.CenterDot then
-			TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 0}):Play()
-		else
-			TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 1}):Play()
-		end
-
 		ViewModelState.LArm = ViewModelState.ViewModel:WaitForChild("Left Arm")
 		ViewModelState.LArmWeld.Part1 = ViewModelState.LArm
 		ViewModelState.LArmWeld.C0 = CFrame.new()
@@ -361,98 +471,100 @@ function WeaponAction:Setup(tool)
 		ViewModelState.RArm.Anchored = false
 
 		--setup weapon to camera
-		ModTable.ZoomValue 		= WeaponData.Zoom
-		ModTable.Zoom2Value 	= WeaponData.Zoom2
-		IREnable 				= WeaponData.InfraRed
+		ModTable.ZoomValue 		= FirearmProps.WeaponData.Zoom
+		ModTable.Zoom2Value 	= FirearmProps.WeaponData.Zoom2
+		FirearmProps.HasIR		= FirearmProps.WeaponData.InfraRed
 
 
-		CAS:BindAction("Fire", handleAction, true, Enum.UserInputType.MouseButton1, Enum.KeyCode.ButtonR2)
-		CAS:BindAction("ADS", handleAction, true, Enum.UserInputType.MouseButton2, Enum.KeyCode.ButtonL2) 
-		CAS:BindAction("Reload", handleAction, true, Enum.KeyCode.R, Enum.KeyCode.ButtonB)
-		CAS:BindAction("CycleAimpart", handleAction, false, Enum.KeyCode.T)
+		CAS:BindAction("Fire", 			HandleAction, true, 	Enum.UserInputType.MouseButton1, 	Enum.KeyCode.ButtonR2)
+		CAS:BindAction("ADS", 			HandleAction, true, 	Enum.UserInputType.MouseButton2, 	Enum.KeyCode.ButtonL2) 
+		CAS:BindAction("Reload", 		HandleAction, true, 	Enum.KeyCode.R, 					Enum.KeyCode.ButtonB )
+		CAS:BindAction("CycleAimpart", 	HandleAction, false, 	Enum.KeyCode.T											 )
 		
-		CAS:BindAction("CycleLaser", handleAction, true, Enum.KeyCode.H)
-		CAS:BindAction("CycleLight", handleAction, true, Enum.KeyCode.J)
+		CAS:BindAction("CycleLaser", 	HandleAction, true, 	Enum.KeyCode.H											 )
+		CAS:BindAction("CycleLight", 	HandleAction, true, 	Enum.KeyCode.J											 )
 		
-		CAS:BindAction("CycleFiremode", handleAction, false, Enum.KeyCode.V)
-		CAS:BindAction("CheckMag", handleAction, false, Enum.KeyCode.M)
+		CAS:BindAction("CycleFiremode", HandleAction, false, 	Enum.KeyCode.V											 )
+		CAS:BindAction("CheckMag", 		HandleAction, false, 	Enum.KeyCode.M											 )
 
-		CAS:BindAction("ZeroDown", handleAction, false, Enum.KeyCode.LeftBracket)
-		CAS:BindAction("ZeroUp", handleAction, false, Enum.KeyCode.RightBracket)
+		CAS:BindAction("ZeroDown", 		HandleAction, false, 	Enum.KeyCode.LeftBracket								 )
+		CAS:BindAction("ZeroUp", 		HandleAction, false, 	Enum.KeyCode.RightBracket								 )
 
-		loadAttachment(WeaponInHand)
+		--loadAttachment(WeaponInHand)
 
-		BSpread				= math.min(WeaponData.MinSpread * ModTable.MinSpread, WeaponData.MaxSpread * ModTable.MaxSpread)
-		RecoilPower 		= math.min(WeaponData.MinRecoilPower * ModTable.MinRecoilPower, WeaponData.MaxRecoilPower * ModTable.MaxRecoilPower)
+		FirearmProps.BulletRecoilSpread	= 
+							math.min(FirearmProps.WeaponData.MinSpread 	  * ModTable.MinSpread, 	FirearmProps.WeaponData.MaxSpread * ModTable.MaxSpread)
+		FirearmProps.RecoilPower 		= 
+							math.min(FirearmProps.WeaponData.MinRecoilPower * ModTable.MinRecoilPower, FirearmProps.WeaponData.MaxRecoilPower * ModTable.MaxRecoilPower)
 
-		Ammo = WeaponData.AmmoInGun
-		StoredAmmo = WeaponData.StoredAmmo
-		CurAimpart = WeaponInHand:FindFirstChild("AimPart")
+		FirearmProps.Ammo 		= FirearmProps.WeaponData.AmmoInGun
+		FirearmProps.StoredAmmo = FirearmProps.WeaponData.StoredAmmo
+		FirearmProps.CurAimpart = FirearmProps.WeaponInHand:FindFirstChild("AimPart")
 		
-		for index, Key in pairs(WeaponInHand:GetDescendants()) do
-			if Key:IsA("BasePart") and Key.Name == "FlashPoint" then
-				FlashLightAttachment = true
+		for _, key in pairs(ViewModelState.WeaponInHand:GetDescendants()) do
+			if key:IsA("BasePart") and key.Name == "FlashPoint" then
+				FirearmProps.HasFlashLight = true
 			end
-			if Key:IsA("BasePart") and Key.Name == "LaserPoint" then
-				LaserAttachment = true
+			if key:IsA("BasePart") and key.Name == "LaserPoint" then
+				FirearmProps.HasLaser = true
 			end
 		end
 		
 
-		if WeaponData.EnableHUD then
+		if FirearmProps.WeaponData.EnableHUD then
 			SE_GUI.GunHUD.Visible = true
 		end
 		UpdateGui()
 
-		for index, key in pairs(WeaponInHand:GetChildren()) do
+		for _, key in pairs(ViewModelState.WeaponInHand:GetChildren()) do
 			if key:IsA('BasePart') and key.Name ~= 'Handle' then
 
 				if key.Name ~= "Bolt" and key.Name ~= 'Lid' and key.Name ~= "Slide" then
-					Ultil.Weld(WeaponInHand:WaitForChild("Handle"), key)
+					Ultil.Weld(ViewModelState.WeaponInHand:WaitForChild("Handle"), key)
 				end
 
 				if key.Name == "Bolt" or key.Name == "Slide" then
-					Ultil.WeldComplex(WeaponInHand:WaitForChild("Handle"), key, key.Name)
+					Ultil.WeldComplex(ViewModelState.WeaponInHand:WaitForChild("Handle"), key, key.Name)
 				end;
 
 				if key.Name == "Lid" then
-					if WeaponInHand:FindFirstChild('LidHinge') then
-						Ultil.Weld(key, WeaponInHand:WaitForChild("LidHinge"))
+					if ViewModelState.WeaponInHand:FindFirstChild('LidHinge') then
+						Ultil.Weld(key, ViewModelState.WeaponInHand:WaitForChild("LidHinge"))
 					else
-						Ultil.Weld(key, WeaponInHand:WaitForChild("Handle"))
+						Ultil.Weld(key, ViewModelState.WeaponInHand:WaitForChild("Handle"))
 					end
 				end
 			end
 		end;
 
-		for L_213_forvar1, L_214_forvar2 in pairs(WeaponInHand:GetChildren()) do
-			if L_214_forvar2:IsA('BasePart') then
-				L_214_forvar2.Anchored = false
-				L_214_forvar2.CanCollide = false
+		for _, gunPart in pairs(ViewModelState.WeaponInHand:GetChildren()) do
+			if gunPart:IsA('BasePart') then
+				gunPart.Anchored = false
+				gunPart.CanCollide = false
 			end
 		end;
 
-		if WeaponInHand:FindFirstChild("Nodes") then
-			for L_213_forvar1, L_214_forvar2 in pairs(WeaponInHand.Nodes:GetChildren()) do
-				if L_214_forvar2:IsA('BasePart') then
-					Ultil.Weld(WeaponInHand:WaitForChild("Handle"), L_214_forvar2)
-					L_214_forvar2.Anchored = false
-					L_214_forvar2.CanCollide = false
+		if ViewModelState.WeaponInHand:FindFirstChild("Nodes") then
+			for _, part in pairs(ViewModelState.WeaponInHand.Nodes:GetChildren()) do
+				if part:IsA('BasePart') then
+					Ultil.Weld(ViewModelState.WeaponInHand:WaitForChild("Handle"), part)
+					part.Anchored = false
+					part.CanCollide = false
 				end
 			end;
 		end
 
-		GunWeld.Part1 = WeaponInHand:WaitForChild("Handle")
-		GunWeld.C1 = guncf
+		ViewModelState.GunWeld.Part1 = ViewModelState.WeaponInHand:WaitForChild("Handle")
+		ViewModelState.GunWeld.C1 = ViewModelState.GunCFrame
 
 		--WeaponInHand:SetPrimaryPartCFrame( RArm.CFrame * guncf)
 
-		WeaponInHand.Parent = ViewModel	
-		if Ammo <= 0 and WeaponData.Type == "Gun" then
-			WeaponInHand.Handle.Slide.C0 = WeaponData.SlideEx:inverse()
+		ViewModelState.WeaponInHand.Parent = ViewModelState.ViewModel	
+		if Ammo <= 0 and FirearmProps.WeaponData.Type == "Gun" then
+			ViewModelState.Handle.Slide.C0 = FirearmProps.WeaponData.SlideEx:Inverse()
 		end
-		EquipAnim()
-		if WeaponData and WeaponData.Type ~= "Grenade" then
+		PlayAnimation:EquipAnim()
+		if FirearmProps.WeaponData and FirearmProps.WeaponData.Type ~= "Grenade" then
 			RunCheck()
 		end
 

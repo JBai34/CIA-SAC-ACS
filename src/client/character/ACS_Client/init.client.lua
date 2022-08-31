@@ -53,8 +53,6 @@ local LastSpreadUpdate = time()
 local SE_GUI
 local SKP_01 = Events.AcessId:InvokeServer(Player.UserId)
 
-local CHup, CHdown, CHleft, CHright = UDim2.new(),UDim2.new(),UDim2.new(),UDim2.new()
-
 local charspeed 	= 0
 local running 		= false
 local runKeyDown 	= false
@@ -180,8 +178,6 @@ SE_GUI.Parent = Player.PlayerGui
 
 local BloodScreen 		= TS:Create(SE_GUI.Efeitos.Health, TweenInfo.new(1,Enum.EasingStyle.Circular,Enum.EasingDirection.InOut,-1,true), {Size =  UDim2.new(1.2,0,1.4,0)})
 local BloodScreenLowHP 	= TS:Create(SE_GUI.Efeitos.LowHealth, TweenInfo.new(1,Enum.EasingStyle.Circular,Enum.EasingDirection.InOut,-1,true), {Size =  UDim2.new(1.2,0,1.4,0)})
-
-local Crosshair = SE_GUI.Crosshair
 
 local RecoilSpring = SpringMod.new(Vector3.new())
 RecoilSpring.d = .1
@@ -738,12 +734,6 @@ function ADS(aimming)
 			GunStance = 2
 			Events.GunStance:FireServer(GunStance,AnimData)
 
-			TS:Create(Crosshair.Up, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Down, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Left, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Right, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 1}):Play()
-
 		else
 			game:GetService('UserInputService').MouseDeltaSensitivity = 1
 			WeaponInHand.Handle.AimUp:Play()
@@ -751,18 +741,6 @@ function ADS(aimming)
 			GunStance = 0
 			Events.GunStance:FireServer(GunStance,AnimData)
 
-			if  WeaponData.CrossHair then
-				TS:Create(Crosshair.Up, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-				TS:Create(Crosshair.Down, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-				TS:Create(Crosshair.Left, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-				TS:Create(Crosshair.Right, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-			end
-
-			if  WeaponData.CenterDot then
-				TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 0}):Play()
-			else
-				TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 1}):Play()
-			end
 		end
 	end
 end
@@ -865,37 +843,6 @@ function setup(Tool)
 		larmcf = AnimData.LArmCFrame
 		rarmcf = AnimData.RArmCFrame
 
-
-		if  WeaponData.CrossHair then
-			TS:Create(Crosshair.Up, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-			TS:Create(Crosshair.Down, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-			TS:Create(Crosshair.Left, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()
-			TS:Create(Crosshair.Right, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 0}):Play()	
-
-			if WeaponData.Bullets > 1 then
-				Crosshair.Up.Rotation = 90
-				Crosshair.Down.Rotation = 90
-				Crosshair.Left.Rotation = 90
-				Crosshair.Right.Rotation = 90
-			else
-				Crosshair.Up.Rotation = 0
-				Crosshair.Down.Rotation = 0
-				Crosshair.Left.Rotation = 0
-				Crosshair.Right.Rotation = 0
-			end
-
-		else
-			TS:Create(Crosshair.Up, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Down, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Left, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-			TS:Create(Crosshair.Right, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-		end
-
-		if  WeaponData.CenterDot then
-			TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 0}):Play()
-		else
-			TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 1}):Play()
-		end
 
 		LArm = ViewModel:WaitForChild("Left Arm")
 		LArmWeld.Part1 = LArm
@@ -1029,11 +976,6 @@ function unset()
 	aimming = false
 
 	TS:Create(cam,AimTween,{FieldOfView = 70}):Play()
-	TS:Create(Crosshair.Up, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-	TS:Create(Crosshair.Down, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-	TS:Create(Crosshair.Left, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-	TS:Create(Crosshair.Right, TweenInfo.new(.2,Enum.EasingStyle.Linear), {BackgroundTransparency = 1}):Play()
-	TS:Create(Crosshair.Center, TweenInfo.new(.2,Enum.EasingStyle.Linear), {ImageTransparency = 1}):Play()
 
 	User.MouseIconEnabled = true
 	game:GetService('UserInputService').MouseDeltaSensitivity = 1
@@ -2612,44 +2554,6 @@ Run.RenderStepped:Connect(function(step)
 
 		recoilcf = recoilcf:Lerp(CFrame.new() * CFrame.Angles( math.rad(RecoilSpring.p.X), math.rad(RecoilSpring.p.Y), math.rad(RecoilSpring.p.z)), 0.2)
 
-
-		if WeaponData.CrossHair then
-			if aimming then
-				CHup = CHup:Lerp(UDim2.new(.5,0,.5,0),0.2)
-				CHdown = CHdown:Lerp(UDim2.new(.5,0,.5,0),0.2)
-				CHleft = CHleft:Lerp(UDim2.new(.5,0,.5,0),0.2)
-				CHright = CHright:Lerp(UDim2.new(.5,0,.5,0),0.2)
-			else
-				local Normalized = ((WeaponData.CrosshairOffset + BSpread + (charspeed * WeaponData.WalkMult * ModTable.WalkMult) ) / 50)/10
-
-				CHup = CHup:Lerp(UDim2.new(0.5, 0, 0.5 - Normalized,0),0.5)
-				CHdown = CHdown:Lerp(UDim2.new(.5, 0, 0.5 + Normalized,0),0.5)
-				CHleft = CHleft:Lerp(UDim2.new(.5 - Normalized, 0, 0.5, 0),0.5)
-				CHright = CHright:Lerp(UDim2.new(.5 + Normalized, 0, 0.5, 0),0.5)
-			end
-
-			Crosshair.Position = UDim2.new(0,mouse.X,0,mouse.Y)
-
-			Crosshair.Up.Position = CHup
-			Crosshair.Down.Position = CHdown
-			Crosshair.Left.Position = CHleft
-			Crosshair.Right.Position = CHright
-
-		else
-
-			CHup = CHup:Lerp(UDim2.new(.5,0,.5,0),0.2)
-			CHdown = CHdown:Lerp(UDim2.new(.5,0,.5,0),0.2)
-			CHleft = CHleft:Lerp(UDim2.new(.5,0,.5,0),0.2)
-			CHright = CHright:Lerp(UDim2.new(.5,0,.5,0),0.2)
-
-			Crosshair.Position = UDim2.new(0,mouse.X,0,mouse.Y)
-
-			Crosshair.Up.Position = CHup
-			Crosshair.Down.Position = CHdown
-			Crosshair.Left.Position = CHleft
-			Crosshair.Right.Position = CHright
-
-		end
 
 		if BSpread then
 			local currTime = time()
