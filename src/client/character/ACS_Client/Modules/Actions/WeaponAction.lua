@@ -387,7 +387,91 @@ function WeaponAction:Shoot(weaponData)
 end
 
 function WeaponAction:Unset(tool)
-	
+	FirearmState.CurrentlyEquippingTool = false
+	Events.Equip:FireServer(WeaponTool,2)
+	--unsetup weapon data module
+	CAS:UnbindAction("Fire")
+	CAS:UnbindAction("ADS")
+	CAS:UnbindAction("Reload")
+	CAS:UnbindAction("CycleLaser")
+	CAS:UnbindAction("CycleLight")
+	CAS:UnbindAction("CycleFiremode")
+	CAS:UnbindAction("CycleAimpart")
+	CAS:UnbindAction("ZeroUp")
+	CAS:UnbindAction("ZeroDown")
+	CAS:UnbindAction("CheckMag")
+
+	InputState.mouse1down = false
+	FirearmState.Aiming = false
+
+	TS:Create(Camera,
+	TweenInfo.new(
+		0.2,
+		Enum.EasingStyle.Linear,
+		Enum.EasingDirection.InOut,
+		0,
+		false,
+		0
+	),
+	{FieldOfView = 70}):Play()
+
+	UIS.MouseIconEnabled = true
+	UIS.MouseDeltaSensitivity = 1
+	Camera.CameraType = Enum.CameraType.Custom
+	Player.CameraMode = Enum.CameraMode.Classic
+
+
+	if ViewModelState.WeaponInHand then
+
+		FirearmProps.WeaponData.AmmoInGun = 0
+		FirearmProps.WeaponData.StoredAmmo = 0
+
+		ViewModelState.ViewModel:Destroy()
+		ViewModelState.ViewModel 		= nil
+		ViewModelState.WeaponInHand	= nil
+		FirearmProps.WeaponTool		= nil
+		ViewModelState.LArm 			= nil
+		ViewModelState.RArm 			= nil
+		ViewModelState.LArmWeld 		= nil
+		ViewModelState.RArmWeld 		= nil
+		FirearmProps.WeaponData 		= nil
+		ViewModelState.AnimData		= nil
+		
+		FirearmProps.SightAttachmentachment  = nil
+		FirearmProps.Reticle                 = nil
+		FirearmProps.BarrelAttachment        = nil
+		FirearmProps.UnderBarrelAttachment   = nil
+		FirearmProps.OtherAttachment         = nil
+		
+		FirearmProps.HasLaser         = false
+		FirearmProps.HasIR            = false
+		FirearmProps.HasFlashLight    = false
+		FirearmProps.HasBipod  = false
+		
+		FirearmProps.LaserDist = 0
+		FirearmProps.Pointer = nil
+		FirearmProps.BulletRecoilSpread = nil
+		FirearmProps.RecoilPower = nil
+		FirearmProps.Suppressor = false
+		FirearmProps.FlashHider = false
+
+		CancelReload 	= false
+		reloading 		= false
+		SafeMode		= false
+		CheckingMag		= false
+		GRDebounce 		= false
+		GunStance 		= 0
+		resetMods()
+		generateBullet 	= 1
+		AimPartMode 	= 1
+
+		SE_GUI.GunHUD.Visible = false
+		SE_GUI.GrenadeForce.Visible = false
+		BipodCF = CFrame.new()
+		if gameRules.ReplicatedLaser then
+			Events.SVLaser:FireServer(nil,2,nil,false,WeaponTool)
+		end
+	end
 end
 
 function WeaponAction:Setup(tool)

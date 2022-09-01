@@ -11,6 +11,7 @@ return {
     
     -- Attachment Data
     SightAttachmentachment  = nil,
+    Reticle                 = nil,
     BarrelAttachment        = nil,
     UnderBarrelAttachment   = nil,
     OtherAttachment         = nil,

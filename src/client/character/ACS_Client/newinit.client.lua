@@ -1,14 +1,15 @@
-
-
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 --=====
-local Modules = script.Modules
-local States = Modules.States
+local Modules:Folder = script.Modules
+local States: Folder = Modules.States
 local FirearmState = require(States.FirearmState)
 local ViewModelState = require(States.ViewModelState)
 local CharacterState = require(States.CharacterState)
 local InputState	= require(States.InputState)
+
+local Actions: Folder = Modules.Actions
+local WeaponAction = require(Actions.FirearmAction)
 
 local Props = Modules.Props
 local FirearmProps = require(Props.FirearmProps)
@@ -36,13 +37,13 @@ Character.ChildAdded:Connect(function(tool)
 		if notDriving then
 			if not FirearmState.CurrentlyEquippingTool then
 				--pcall(function()
-				setup(tool)
+				WeaponAction:Setup(tool)
 				--end)
 
 			elseif FirearmState.CurrentlyEquippingTool then
 				pcall(function()
-					unset()
-					setup(tool)
+					WeaponAction:Unset(tool)
+					WeaponAction:Setup(tool)
 				end)
 			end;
 		end;
@@ -51,9 +52,9 @@ Character.ChildAdded:Connect(function(tool)
 end)
 
 Character.ChildRemoved:Connect(function(tool)
-	if tool == WeaponTool then
-		if CurrentlyEquippingTool then
-			unset()
+	if tool == FirearmProps.WeaponTool then
+		if FirearmState.CurrentlyEquippingTool then
+			WeaponAction:Unset(tool)
 		end
 	end
 end)
