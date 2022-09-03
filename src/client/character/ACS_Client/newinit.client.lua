@@ -1,12 +1,8 @@
-local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 --=====
 local Modules:Folder = script.Modules
 local States: Folder = Modules.States
 local FirearmState = require(States.FirearmState)
-local ViewModelState = require(States.ViewModelState)
-local CharacterState = require(States.CharacterState)
-local InputState	= require(States.InputState)
 
 local Actions: Folder = Modules.Actions
 local WeaponAction = require(Actions.FirearmAction)
@@ -14,14 +10,11 @@ local WeaponAction = require(Actions.FirearmAction)
 local Props = Modules.Props
 local FirearmProps = require(Props.FirearmProps)
 
-local CalculateBulletSpread = require(Modules.Others.CalculateBulletSpread)
-
 local Player = Players.LocalPlayer
 if not Player.Character then Player.CharacterAdded:Wait() end
 local Character = Player.Character
 
 --=====
-local ReplicatedStorage 			= game:GetService("ReplicatedStorage")
 
 Character.ChildAdded:Connect(function(tool)
 	if      

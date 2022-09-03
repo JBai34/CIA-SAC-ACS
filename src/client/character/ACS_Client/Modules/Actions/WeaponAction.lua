@@ -1,6 +1,7 @@
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage= game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
 local CAS = game:GetService("ContextActionService")
@@ -26,8 +27,10 @@ local FirearmProps 		= require(Props.FirearmProps)
 
 local Others:Folder 		= Modules.Others
 local CalculateBulletSpread = require(Others.CalculateBulletSpread)
+local CalculateTracer		= require(Others.CalculateTracer)
 local ModTable 				= require(Others.ModTable)
 local RunCheck				= require(Others.RunCheck)
+local GunFx					= require(Others.GunFX)
 
 local Camera = workspace.CurrentCamera
 --=====
@@ -51,11 +54,126 @@ local Ultil			         = require(Mods:WaitForChild("Utilities"))
 --=========================================================
 local WeaponAction = {}
 
+function WeaponAction:CastRay(_bullet, _origin)
+	if _bullet then
+
+		local Bpos = _bullet.Position
+		local Bpos2 = Camera.CFrame.Position
+
+		local recast = false
+		local TotalDistTraveled = 0
+		local Debounce = false
+		local raycastResult
+
+		local raycastParams = RaycastParams.new()
+		raycastParams.FilterDescendantsInstances = Ignore_Model
+		raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+		raycastParams.IgnoreWater = true
+
+		while _bullet do
+			RunService.Heartbeat:Wait()
+			if _bullet.Parent ~= nil then
+				Bpos = _bullet.Position
+				TotalDistTraveled = (_bullet.Position - _origin).Magnitude
+
+				if TotalDistTraveled > 7000 then
+					_bullet:Destroy()
+					Debounce = true
+					break
+				end
+
+				for _, player in pairs(game.Players:GetChildren()) do
+					if not Debounce and player:IsA('Player') and player ~= Player and player.Character and player.Character:FindFirstChild('Head') ~= nil and (player.Character.Head.Position - Bpos).magnitude <= 25 then
+						Events.Whizz:FireServer(player)
+						Events.Suppression:FireServer(player,1,nil,nil)
+						Debounce = true
+					end
+				end
+
+				-- Set an _origin and directional vector
+				raycastResult = workspace:Raycast(Bpos2, (Bpos - Bpos2) * 1, raycastParams)
+
+				recast = false
+
+				if raycastResult then
+					local Hit2 = raycastResult.Instance
+
+					if Hit2 and Hit2.Parent:IsA('Accessory') or Hit2.Parent:IsA('Hat') then
+						for _,players in pairs(game.Players:GetPlayers()) do
+							if players.Character then
+								for _, hats in pairs(players.Character:GetChildren()) do
+									if hats:IsA("Accessory") then
+										table.insert(Ignore_Model, hats)
+									end
+								end
+							end
+						end
+						recast = true
+						self:CastRay(_bullet, _origin)
+						break
+					end
+					
+					if Hit2 and Hit2.Name == "Ignorable" or Hit2.Name == "Glass" or Hit2.Name == "Ignore" or Hit2.Parent.Name == "Top" or Hit2.Parent.Name == "Helmet" or Hit2.Parent.Name == "Up" or Hit2.Parent.Name == "Down" or Hit2.Parent.Name == "Face" or Hit2.Parent.Name == "Olho" or Hit2.Parent.Name == "Headset" or Hit2.Parent.Name == "Numero" or Hit2.Parent.Name == "Vest" or Hit2.Parent.Name == "Chest" or Hit2.Parent.Name == "Waist" or Hit2.Parent.Name == "Back" or Hit2.Parent.Name == "Belt" or Hit2.Parent.Name == "Leg1" or Hit2.Parent.Name == "Leg2" or Hit2.Parent.Name == "Arm1"  or Hit2.Parent.Name == "Arm2" then
+						table.insert(Ignore_Model, Hit2)
+						recast = true
+						self:CastRay(_bullet, _origin)
+						break
+					end
+					
+					if Hit2 and Hit2.Parent.Name == "Top" or Hit2.Parent.Name == "Helmet" or Hit2.Parent.Name == "Up" or Hit2.Parent.Name == "Down" or Hit2.Parent.Name == "Face" or Hit2.Parent.Name == "Olho" or Hit2.Parent.Name == "Headset" or Hit2.Parent.Name == "Numero" or Hit2.Parent.Name == "Vest" or Hit2.Parent.Name == "Chest" or Hit2.Parent.Name == "Waist" or Hit2.Parent.Name == "Back" or Hit2.Parent.Name == "Belt" or Hit2.Parent.Name == "Leg1" or Hit2.Parent.Name == "Leg2" or Hit2.Parent.Name == "Arm1"  or Hit2.Parent.Name == "Arm2" then
+						table.insert(Ignore_Model, Hit2.Parent)
+						recast = true
+						self:CastRay(_bullet, _origin)
+						break
+					end
+
+					if Hit2 and (Hit2.Transparency >= 1 or Hit2.CanCollide == false) and Hit2.Name ~= 'Head' and Hit2.Name ~= 'Right Arm' and Hit2.Name ~= 'Left Arm' and Hit2.Name ~= 'Right Leg' and Hit2.Name ~= 'Left Leg' and Hit2.Name ~= "UpperTorso" and Hit2.Name ~= "LowerTorso" and Hit2.Name ~= "RightUpperArm" and Hit2.Name ~= "RightLowerArm" and Hit2.Name ~= "RightHand" and Hit2.Name ~= "LeftUpperArm" and Hit2.Name ~= "LeftLowerArm" and Hit2.Name ~= "LeftHand" and Hit2.Name ~= "RightUpperLeg" and Hit2.Name ~= "RightLowerLeg" and Hit2.Name ~= "RightFoot" and Hit2.Name ~= "LeftUpperLeg" and Hit2.Name ~= "LeftLowerLeg" and Hit2.Name ~= "LeftFoot" and Hit2.Name ~= 'Armor' and Hit2.Name ~= 'EShield' then
+						table.insert(Ignore_Model, Hit2)
+						recast = true
+						self:CastRay(_bullet, _origin)
+						break
+					end
+
+					if not recast then
+
+						_bullet:Destroy()
+						Debounce = true
+
+						local FoundHuman,VitimaHuman = CheckForHumanoid(raycastResult.Instance)
+						HitMod.HitEffect(Ignore_Model, raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, WeaponData)
+						Events.HitEffect:FireServer(raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, WeaponData)
+						
+						local HitPart = raycastResult.Instance
+						TotalDistTraveled = (raycastResult.Position - _origin).Magnitude
+
+						if FoundHuman == true and VitimaHuman.Health > 0 and WeaponData then
+							local SKP_02 = SKP_01.."-"..Player.UserId
+
+							if HitPart.Name == "Head" or HitPart.Parent.Name == "Top" or HitPart.Parent.Name == "Headset" or HitPart.Parent.Name == "Olho" or HitPart.Parent.Name == "Face" or HitPart.Parent.Name == "Numero" then
+								Events.Damage:InvokeServer(WeaponTool, VitimaHuman, TotalDistTraveled, 1, WeaponData, ModTable, nil, nil, SKP_02)
+							elseif HitPart.Name == "Torso" or HitPart.Name == "UpperTorso" or HitPart.Name == "LowerTorso" or HitPart.Parent.Name == "Chest" or HitPart.Parent.Name == "Waist" or HitPart.Name == "Right Arm" or HitPart.Name == "Left Arm" or HitPart.Name == "RightUpperArm" or HitPart.Name == "RightLowerArm" or HitPart.Name == "RightHand" or HitPart.Name == "LeftUpperArm" or HitPart.Name == "LeftLowerArm" or HitPart.Name == "LeftHand" then				
+								Events.Damage:InvokeServer(WeaponTool, VitimaHuman, TotalDistTraveled, 2, WeaponData, ModTable, nil, nil, SKP_02)
+							elseif HitPart.Name == "Right Leg" or HitPart.Name == "Left Leg" or HitPart.Name == "RightUpperLeg" or HitPart.Name == "RightLowerLeg" or HitPart.Name == "RightFoot" or HitPart.Name == "LeftUpperLeg" or HitPart.Name == "LeftLowerLeg" or HitPart.Name == "LeftFoot" then
+								Events.Damage:InvokeServer(WeaponTool, VitimaHuman, TotalDistTraveled, 3, WeaponData, ModTable, nil, nil, SKP_02)		
+							end	
+						end
+					end
+					break
+				end
+
+				Bpos2 = Bpos
+			else
+				break
+			end
+		end
+	end
+end
+
 function WeaponAction:UpdateGui()
 	if SE_GUI then
 		local HUD = SE_GUI.GunHUD
 
-		if WeaponData ~= nil then
+		if FirearmProps.WeaponData ~= nil then
 
 			--[[if Settings.ArcadeMode == true then
 				HUD.Ammo.Visible = true
@@ -74,88 +192,88 @@ function WeaponAction:UpdateGui()
 				HUD.E.Visible = false
 			end]]
 
-			if WeaponData.Jammed then
+			if FirearmProps.WeaponData.Jammed then
 				HUD.B.BackgroundColor3 = Color3.fromRGB(255,0,0)
 			else
 				HUD.B.BackgroundColor3 = Color3.fromRGB(255,255,255)
 			end
 
-			if SafeMode then
+			if FirearmState.SafeMode then
 				HUD.A.Visible = true
 			else
 				HUD.A.Visible = false
 			end
 
-			if Ammo > 0 then
+			if FirearmProps.Ammo > 0 then
 				HUD.B.Visible = true
 			else
 				HUD.B.Visible = false
 			end
 
-			if WeaponData.ShootType == 1 then
+			if FirearmProps.WeaponData.ShootType == 1 then
 				HUD.FText.Text = "Semi"
-			elseif WeaponData.ShootType == 2 then
+			elseif FirearmProps.WeaponData.ShootType == 2 then
 				HUD.FText.Text = "Burst"
-			elseif WeaponData.ShootType == 3 then
+			elseif FirearmProps.WeaponData.ShootType == 3 then
 				HUD.FText.Text = "Auto"
-			elseif WeaponData.ShootType == 4 then
+			elseif FirearmProps.WeaponData.ShootType == 4 then
 				HUD.FText.Text = "Pump-Action"
-			elseif WeaponData.ShootType == 5 then
+			elseif FirearmProps.WeaponData.ShootType == 5 then
 				HUD.FText.Text = "Bolt-Action"
 			end
 
-			HUD.Sens.Text = (Sens/100)
-			HUD.BText.Text = WeaponData.BulletType
-			HUD.NText.Text = WeaponData.gunName
+			HUD.Sens.Text = (InputState.MouseSensitivity/100)
+			HUD.BText.Text = FirearmProps.WeaponData.BulletType
+			HUD.NText.Text = FirearmProps.WeaponData.gunName
 
-			if WeaponData.EnableZeroing then
+			if FirearmProps.WeaponData.EnableZeroing then
 				HUD.ZeText.Visible = true
-				HUD.ZeText.Text = WeaponData.CurrentZero .." m"
+				HUD.ZeText.Text = FirearmProps.WeaponData.CurrentZero .." m"
 			else
 				HUD.ZeText.Visible = false
 			end
 
-			if WeaponData.MagCount then
-				HUD.SAText.Text = math.ceil(StoredAmmo/WeaponData.Ammo)
+			if FirearmProps.WeaponData.MagCount then
+				HUD.SAText.Text = math.ceil(FirearmProps.StoredAmmo/FirearmProps.WeaponData.Ammo)
 				HUD.Magazines.Visible = true
 				HUD.Bullets.Visible = false
 			else
-				HUD.SAText.Text = StoredAmmo
+				HUD.SAText.Text = FirearmProps.StoredAmmo
 				HUD.Magazines.Visible = false
 				HUD.Bullets.Visible = true
 			end
 
-			if Suppressor then
+			if FirearmProps.Suppressor then
 				HUD.Att.Silencer.Visible = true
 			else
 				HUD.Att.Silencer.Visible = false
 			end
 
 
-			if LaserAttachment then
+			if FirearmProps.HasLaser then
 				HUD.Att.Laser.Visible = true
-				if LaserActive then
-					if IRmode then
+				if FirearmState.LaserActive then
+					if FirearmProps.HasIR and FirearmState.IRLaserActive == false then -- Enable IR
 						TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(0,255,0), ImageTransparency = .123}):Play()
-					else
+					elseif not (FirearmProps.HasIR and FirearmState.IRLaserActive) then -- No IR/Disable IR
 						TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,255,255), ImageTransparency = .123}):Play()
 					end
-				else
+				else -- Laser deactivated
 					TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,0,0), ImageTransparency = .5}):Play()
 				end
-			else
+			else -- No laser on firearm
 				HUD.Att.Laser.Visible = false
 			end
 
-			if BipodAtt then
+			if FirearmProps.HasBipod then
 				HUD.Att.Bipod.Visible = true
 			else
 				HUD.Att.Bipod.Visible = false
 			end
 
-			if FlashLightAttachment then
+			if FirearmProps.HasFlashLight then
 				HUD.Att.Flash.Visible = true
-				if FlashLightActive then
+				if FirearmState.FlashLightActive then
 					TS:Create(HUD.Att.Flash, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,255,255), ImageTransparency = .123}):Play()
 				else
 					TS:Create(HUD.Att.Flash, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,0,0), ImageTransparency = .5}):Play()
@@ -164,7 +282,7 @@ function WeaponAction:UpdateGui()
 				HUD.Att.Flash.Visible = false
 			end
 
-			if WeaponData.Type == "Grenade" then
+			if FirearmProps.WeaponData.Type == "Grenade" then
 				SE_GUI.GrenadeForce.Visible = true
 			else
 				SE_GUI.GrenadeForce.Visible = false
@@ -173,7 +291,7 @@ function WeaponAction:UpdateGui()
 	end
 end
 
-function WeaponAction:CreateBullet(weaponData)
+function WeaponAction:CreateBullet()
 
 		local Bullet = Instance.new("Part",ACS_Workspace.Client)
 		Bullet.Name = Player.Name.."_Bullet"
@@ -185,13 +303,13 @@ function WeaponAction:CreateBullet(weaponData)
 		local Origin 		= ViewModelState.WeaponInHand.Handle.Muzzle.WorldPosition
 		local Direction 	= ViewModelState.WeaponInHand.Handle.Muzzle.WorldCFrame.LookVector + 
 								(ViewModelState.WeaponInHand.Handle.Muzzle.WorldCFrame.UpVector * 
-								(((weaponData.BulletDrop * weaponData.CurrentZero/4)/weaponData.MuzzleVelocity))/2)
+								(((FirearmProps.WeaponData.BulletDrop * FirearmProps.WeaponData.CurrentZero/4)/FirearmProps.WeaponData.MuzzleVelocity))/2)
 		local BulletCF 		= CFrame.new(Origin, Direction) 
-		local WalkMul 		= weaponData.WalkMult * ModTable.WalkMult
+		local WalkMul 				= FirearmProps.WeaponData.WalkMult * ModTable.WalkMult
 		local BColor 		= Color3.fromRGB(255,255,255)
 		local bulletSpread
 
-		if FirearmState.Aimming and weaponData.Bullets <= 1 then
+		if FirearmState.Aimming and FirearmProps.WeaponData.Bullets <= 1 then
 			bulletSpread = CalculateBulletSpread()
 		else
 			bulletSpread = CalculateBulletSpread()
@@ -199,20 +317,20 @@ function WeaponAction:CreateBullet(weaponData)
 
 		Direction = bulletSpread * Direction
 
-		local tracerIsVisible = TracerCalculation()
+		local tracerIsVisible = CalculateTracer(FirearmProps.WeaponData, FirearmState)
 
-		if weaponData.RainbowMode then
+		if FirearmProps.WeaponData.RainbowMode then
 			BColor = Color3.fromRGB(math.random(0,255),math.random(0,255),math.random(0,255))
 		else
-			BColor = weaponData.TracerColor
+			BColor = FirearmProps.WeaponData.TracerColor
 		end
 
 		if tracerIsVisible then
 			if gameRules.ReplicatedBullets then
-				Events.ServerBullet:FireServer(Origin,Direction,weaponData,ModTable)
+				Events.ServerBullet:FireServer(Origin,Direction,FirearmProps.WeaponData,ModTable)
 			end
 
-			if weaponData.Tracer == true then
+			if FirearmProps.WeaponData.Tracer == true then
 
 				local At1 = Instance.new("Attachment")
 				At1.Name = "At1"
@@ -250,7 +368,7 @@ function WeaponAction:CreateBullet(weaponData)
 				Particles.Parent = Bullet
 			end
 
-			if weaponData.BulletFlare == true then
+			if FirearmProps.WeaponData.BulletFlare == true then
 				local bg = Instance.new("BillboardGui", Bullet)
 				bg.Adornee = Bullet
 				bg.Enabled = false
@@ -276,28 +394,28 @@ function WeaponAction:CreateBullet(weaponData)
 		end
 
 		local BulletMass = Bullet:GetMass()
-		local Force = Vector3.new(0,BulletMass * (196.2) - (weaponData.BulletDrop) * (196.2), 0)
+		local Force = Vector3.new(0,BulletMass * (196.2) - (FirearmProps.WeaponData.BulletDrop) * (196.2), 0)
 		local BF = Instance.new("BodyForce",Bullet)
 
 		Bullet.CFrame = BulletCF
-		Bullet:ApplyImpulse(Direction * weaponData.MuzzleVelocity * ModTable.MuzzleVelocity)
+		Bullet:ApplyImpulse(Direction * FirearmProps.WeaponData.MuzzleVelocity * ModTable.MuzzleVelocity)
 		BF.Force = Force
 
 		Debris:AddItem(Bullet, 5)
 
-		CastRay(Bullet, Origin)
+		self:CastRay(Bullet, Origin)
 	end
 end
 
-function WeaponAction:Shoot(weaponData)
-	if weaponData and weaponData.Type == "Gun" and not FirearmState.Shooting and not FirearmState.Reloading then
+function WeaponAction:Shoot()
+	if FirearmProps.WeaponData and FirearmProps.WeaponData.Type == "Gun" and not FirearmState.Shooting and not FirearmState.Reloading then
 
 		if FirearmState.Reloading or InputState.runKeyDown or FirearmState.SafeMode or FirearmState.CheckingMag then
 			mouse1down = false
 			return
 		end
 
-		if Ammo <= 0 or weaponData.Jammed then
+		if Ammo <= 0 or FirearmProps.WeaponData.Jammed then
 			ViewModelState.WeaponInHand.Handle.Click:Play()
 			mouse1down = false
 			return
@@ -306,67 +424,67 @@ function WeaponAction:Shoot(weaponData)
 		mouse1down = true
 
 		task.defer(function()
-			if weaponData and weaponData.ShootType == 1 then 
+			if FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 1 then 
 				FirearmState.Shooting = true	
 				Events.Shoot:FireServer(FirearmProps.WeaponTool,FirearmProps.Suppressor,FirearmProps.FlashHider)
-				for _ =  1, weaponData.Bullets do
-					task.spawn(self:CreateBullet(weaponData))
+				for _ =  1, FirearmProps.WeaponData.Bullets do
+					task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 				end
 				Ammo = Ammo - 1
-				GunFx()
+				GunFx(FirearmProps, FirearmState, ViewModelState)
 				JamChance()
-				UpdateGui()
+				self:UpdateGui()
 				task.spawn(Recoil)
-				task.wait(60/weaponData.ShootRate)
+				task.wait(60/FirearmProps.WeaponData.ShootRate)
 				FirearmState.Shooting = false
 
-			elseif weaponData and weaponData.ShootType == 2 then
-				for i = 1, weaponData.BurstShot do
-					if FirearmState.Shooting or Ammo <= 0 or mouse1down == false or weaponData.Jammed then
+			elseif FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 2 then
+				for i = 1, FirearmProps.WeaponData.BurstShot do
+					if FirearmState.Shooting or Ammo <= 0 or mouse1down == false or FirearmProps.WeaponData.Jammed then
 						break
 					end
 					FirearmState.Shooting = true	
 					Events.Shoot:FireServer(FirearmProps.WeaponTool,FirearmProps.Suppressor,FirearmProps.FlashHider)
-					for _ =  1, weaponData.Bullets do
-						task.spawn(self:CreateBullet(weaponData))
+					for _ =  1, FirearmProps.WeaponData.Bullets do
+						task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 					end
 					Ammo = Ammo - 1
-					GunFx()
+					GunFx(FirearmProps, FirearmState, ViewModelState)
 					JamChance()
-					UpdateGui()
+					self:UpdateGui()
 					task.spawn(Recoil)
-					task.wait(60/weaponData.ShootRate)
+					task.wait(60/FirearmProps.WeaponData.ShootRate)
 					FirearmState.Shooting = false
 
 				end
-			elseif weaponData and weaponData.ShootType == 3 then
+			elseif FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 3 then
 				while mouse1down do
-					if FirearmState.Shooting or Ammo <= 0 or weaponData.Jammed then
+					if FirearmState.Shooting or Ammo <= 0 or FirearmProps.WeaponData.Jammed then
 						break
 					end
 					FirearmState.Shooting = true	
 					Events.Shoot:FireServer(FirearmProps.WeaponTool,FirearmProps.Suppressor,FirearmProps.FlashHider)
-					for _ =  1, weaponData.Bullets do
-						task.spawn(self:CreateBullet(weaponData))
+					for _ =  1, FirearmProps.WeaponData.Bullets do
+						task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 					end
 					Ammo = Ammo - 1
-					GunFx()
+					GunFx(FirearmProps, FirearmState, ViewModelState)
 					JamChance()
-					UpdateGui()
+					self:UpdateGui()
 					task.spawn(Recoil)
-					task.wait(60/weaponData.ShootRate)
+					task.wait(60/FirearmProps.WeaponData.ShootRate)
 					FirearmState.Shooting = false
 
 				end
-			elseif weaponData and weaponData.ShootType == 4 or weaponData and weaponData.ShootType == 5 then
+			elseif FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 4 or FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 5 then
 				FirearmState.Shooting = true	
 				Events.Shoot:FireServer(FirearmProps.WeaponTool,FirearmProps.Suppressor,FirearmProps.FlashHider)
-				for _ =  1, weaponData.Bullets do
-					task.spawn(self:CreateBullet(weaponData))
+				for _ =  1, FirearmProps.WeaponData.Bullets do
+					task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 				end
 				Ammo = Ammo - 1
-				GunFx()
-				UpdateGui()
+				GunFx(FirearmProps, FirearmState, ViewModelState)
+				self:UpdateGui()
 				task.spawn(Recoil)
 				PlayAnimation:PumpAnim()
 				RunCheck()
@@ -375,7 +493,7 @@ function WeaponAction:Shoot(weaponData)
 			end
 		end)
 
-	elseif weaponData and weaponData.Type == "Melee" and not InputState.runKeyDown then
+	elseif FirearmProps.WeaponData and FirearmProps.WeaponData.Type == "Melee" and not InputState.runKeyDown then
 		if not FirearmState.Shooting then
 			FirearmState.Shooting = true
 			meleeCast()
@@ -598,7 +716,7 @@ function WeaponAction:Setup(tool)
 		if FirearmProps.WeaponData.EnableHUD then
 			SE_GUI.GunHUD.Visible = true
 		end
-		UpdateGui()
+		self:UpdateGui()
 
 		for _, key in pairs(ViewModelState.WeaponInHand:GetChildren()) do
 			if key:IsA('BasePart') and key.Name ~= 'Handle' then

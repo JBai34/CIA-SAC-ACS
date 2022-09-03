@@ -1,12 +1,18 @@
+-- This should be universal throughout all firearms
 return {
+    Tracers = 0,
+    
     Aiming = false,
     Shooting = false,
     Reloading = false,
     SafeMode = false,
     CheckingMag = false,
     LaserActive = false,
-    TorchActive = false,
+    IRLaserActive = false,
+    FlashLightActive = false,
     BipodActive = false,
+    
+    LastSpreadUpdate = time(),
     
     reticle = nil,   
     IRmode = false,
@@ -15,6 +21,9 @@ return {
     
     GRDebounce = false,
     GunStance = 0,
+    
+    GenerateBullet 	= 1,
+	AimPartMode 	= 1,
     
     CurrentlyEquippingTool = false,
 }
