@@ -1108,22 +1108,22 @@ function Recoil()
 	end
 end
 
-function CheckForHumanoid(L_225_arg1)
-	local L_226_ = false
-	local L_227_ = nil
-	if L_225_arg1 then
-		if (L_225_arg1.Parent:FindFirstChildOfClass("Humanoid") or L_225_arg1.Parent.Parent:FindFirstChildOfClass("Humanoid")) then
-			L_226_ = true
-			if L_225_arg1.Parent:FindFirstChildOfClass('Humanoid') then
-				L_227_ = L_225_arg1.Parent:FindFirstChildOfClass('Humanoid')
-			elseif L_225_arg1.Parent.Parent:FindFirstChildOfClass('Humanoid') then
-				L_227_ = L_225_arg1.Parent.Parent:FindFirstChildOfClass('Humanoid')
+function CheckForHumanoid(raycastResult)
+	local FoundHumanoid = false
+	local HumanoidInstance: Humanoid = nil
+	if raycastResult then
+		if (raycastResult.Parent:FindFirstChildOfClass("Humanoid") or raycastResult.Parent.Parent:FindFirstChildOfClass("Humanoid")) then
+			FoundHumanoid = true
+			if raycastResult.Parent:FindFirstChildOfClass('Humanoid') then
+				HumanoidInstance = raycastResult.Parent:FindFirstChildOfClass('Humanoid')
+			elseif raycastResult.Parent.Parent:FindFirstChildOfClass('Humanoid') then
+				HumanoidInstance = raycastResult.Parent.Parent:FindFirstChildOfClass('Humanoid')
 			end
 		else
-			L_226_ = false
+			FoundHumanoid = false
 		end	
 	end
-	return L_226_, L_227_
+	return FoundHumanoid, HumanoidInstance
 end
 
 function CastRay(Bullet, Origin)

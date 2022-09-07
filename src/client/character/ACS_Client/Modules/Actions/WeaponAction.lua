@@ -31,8 +31,7 @@ local CalculateTracer		= require(Others.CalculateTracer)
 local ModTable 				= require(Others.ModTable)
 local RunCheck				= require(Others.RunCheck)
 local GunFx					= require(Others.GunFX)
-
-local Camera = workspace.CurrentCamera
+-- ==
 --=====
 local ACS_Workspace = workspace:FindFirstChild("ACS_WorkSpace")
 local Engine 		= ReplicatedStorage:FindFirstChild("ACS_Engine")
@@ -54,6 +53,9 @@ local Ultil			         = require(Mods:WaitForChild("Utilities"))
 --=========================================================
 local WeaponAction = {}
 
+local Camera = workspace.CurrentCamera
+local IgnoreModel = {Camera,Character,ACS_Workspace.Client,ACS_Workspace.Server}
+
 function WeaponAction:CastRay(_bullet, _origin)
 	if _bullet then
 
@@ -66,7 +68,7 @@ function WeaponAction:CastRay(_bullet, _origin)
 		local raycastResult
 
 		local raycastParams = RaycastParams.new()
-		raycastParams.FilterDescendantsInstances = Ignore_Model
+		raycastParams.FilterDescendantsInstances = IgnoreModel
 		raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
 		raycastParams.IgnoreWater = true
 
@@ -82,10 +84,11 @@ function WeaponAction:CastRay(_bullet, _origin)
 					break
 				end
 
-				for _, player in pairs(game.Players:GetChildren()) do
-					if not Debounce and player:IsA('Player') and player ~= Player and player.Character and player.Character:FindFirstChild('Head') ~= nil and (player.Character.Head.Position - Bpos).magnitude <= 25 then
-						Events.Whizz:FireServer(player)
-						Events.Suppression:FireServer(player,1,nil,nil)
+				for _, targetPlayer in pairs(game.Players:GetPlayers()) do
+					if not Debounce and targetPlayer ~= Player and targetPlayer.Character and targetPlayer.Character:FindFirstChild('Head') ~= nil 
+						and (targetPlayer.Character.Head.Position - Bpos).magnitude <= 25 then
+						Events.Whizz:FireServer(targetPlayer)
+						Events.Suppression:FireServer(targetPlayer,1)
 						Debounce = true
 					end
 				end
@@ -98,12 +101,12 @@ function WeaponAction:CastRay(_bullet, _origin)
 				if raycastResult then
 					local Hit2 = raycastResult.Instance
 
-					if Hit2 and Hit2.Parent:IsA('Accessory') or Hit2.Parent:IsA('Hat') then
+					if Hit2 and (Hit2.Parent:IsA('Accessory') or Hit2.Parent:IsA('Hat')) then
 						for _,players in pairs(game.Players:GetPlayers()) do
 							if players.Character then
 								for _, hats in pairs(players.Character:GetChildren()) do
 									if hats:IsA("Accessory") then
-										table.insert(Ignore_Model, hats)
+										table.insert(IgnoreModel, hats)
 									end
 								end
 							end
@@ -114,21 +117,21 @@ function WeaponAction:CastRay(_bullet, _origin)
 					end
 					
 					if Hit2 and Hit2.Name == "Ignorable" or Hit2.Name == "Glass" or Hit2.Name == "Ignore" or Hit2.Parent.Name == "Top" or Hit2.Parent.Name == "Helmet" or Hit2.Parent.Name == "Up" or Hit2.Parent.Name == "Down" or Hit2.Parent.Name == "Face" or Hit2.Parent.Name == "Olho" or Hit2.Parent.Name == "Headset" or Hit2.Parent.Name == "Numero" or Hit2.Parent.Name == "Vest" or Hit2.Parent.Name == "Chest" or Hit2.Parent.Name == "Waist" or Hit2.Parent.Name == "Back" or Hit2.Parent.Name == "Belt" or Hit2.Parent.Name == "Leg1" or Hit2.Parent.Name == "Leg2" or Hit2.Parent.Name == "Arm1"  or Hit2.Parent.Name == "Arm2" then
-						table.insert(Ignore_Model, Hit2)
+						table.insert(IgnoreModel, Hit2)
 						recast = true
 						self:CastRay(_bullet, _origin)
 						break
 					end
 					
 					if Hit2 and Hit2.Parent.Name == "Top" or Hit2.Parent.Name == "Helmet" or Hit2.Parent.Name == "Up" or Hit2.Parent.Name == "Down" or Hit2.Parent.Name == "Face" or Hit2.Parent.Name == "Olho" or Hit2.Parent.Name == "Headset" or Hit2.Parent.Name == "Numero" or Hit2.Parent.Name == "Vest" or Hit2.Parent.Name == "Chest" or Hit2.Parent.Name == "Waist" or Hit2.Parent.Name == "Back" or Hit2.Parent.Name == "Belt" or Hit2.Parent.Name == "Leg1" or Hit2.Parent.Name == "Leg2" or Hit2.Parent.Name == "Arm1"  or Hit2.Parent.Name == "Arm2" then
-						table.insert(Ignore_Model, Hit2.Parent)
+						table.insert(IgnoreModel, Hit2.Parent)
 						recast = true
 						self:CastRay(_bullet, _origin)
 						break
 					end
 
 					if Hit2 and (Hit2.Transparency >= 1 or Hit2.CanCollide == false) and Hit2.Name ~= 'Head' and Hit2.Name ~= 'Right Arm' and Hit2.Name ~= 'Left Arm' and Hit2.Name ~= 'Right Leg' and Hit2.Name ~= 'Left Leg' and Hit2.Name ~= "UpperTorso" and Hit2.Name ~= "LowerTorso" and Hit2.Name ~= "RightUpperArm" and Hit2.Name ~= "RightLowerArm" and Hit2.Name ~= "RightHand" and Hit2.Name ~= "LeftUpperArm" and Hit2.Name ~= "LeftLowerArm" and Hit2.Name ~= "LeftHand" and Hit2.Name ~= "RightUpperLeg" and Hit2.Name ~= "RightLowerLeg" and Hit2.Name ~= "RightFoot" and Hit2.Name ~= "LeftUpperLeg" and Hit2.Name ~= "LeftLowerLeg" and Hit2.Name ~= "LeftFoot" and Hit2.Name ~= 'Armor' and Hit2.Name ~= 'EShield' then
-						table.insert(Ignore_Model, Hit2)
+						table.insert(IgnoreModel, Hit2)
 						recast = true
 						self:CastRay(_bullet, _origin)
 						break
@@ -139,22 +142,22 @@ function WeaponAction:CastRay(_bullet, _origin)
 						_bullet:Destroy()
 						Debounce = true
 
-						local FoundHuman,VitimaHuman = CheckForHumanoid(raycastResult.Instance)
-						HitMod.HitEffect(Ignore_Model, raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, WeaponData)
-						Events.HitEffect:FireServer(raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, WeaponData)
+						local foundHumanoid, humanoid = CheckForHumanoid(raycastResult.Instance) -- returns boolean, humanoid
+						HitMod.HitEffect(IgnoreModel, raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, FirearmProps.WeaponData)
+						Events.HitEffect:FireServer(raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, FirearmProps.WeaponData)
 						
 						local HitPart = raycastResult.Instance
 						TotalDistTraveled = (raycastResult.Position - _origin).Magnitude
 
-						if FoundHuman == true and VitimaHuman.Health > 0 and WeaponData then
+						if foundHumanoid == true and humanoid.Health > 0 and FirearmProps.WeaponData then
 							local SKP_02 = SKP_01.."-"..Player.UserId
 
 							if HitPart.Name == "Head" or HitPart.Parent.Name == "Top" or HitPart.Parent.Name == "Headset" or HitPart.Parent.Name == "Olho" or HitPart.Parent.Name == "Face" or HitPart.Parent.Name == "Numero" then
-								Events.Damage:InvokeServer(WeaponTool, VitimaHuman, TotalDistTraveled, 1, WeaponData, ModTable, nil, nil, SKP_02)
+								Events.Damage:InvokeServer(FirearmProps.WeaponTool, humanoid, TotalDistTraveled, 1, FirearmProps.WeaponData, ModTable, nil, nil, SKP_02)
 							elseif HitPart.Name == "Torso" or HitPart.Name == "UpperTorso" or HitPart.Name == "LowerTorso" or HitPart.Parent.Name == "Chest" or HitPart.Parent.Name == "Waist" or HitPart.Name == "Right Arm" or HitPart.Name == "Left Arm" or HitPart.Name == "RightUpperArm" or HitPart.Name == "RightLowerArm" or HitPart.Name == "RightHand" or HitPart.Name == "LeftUpperArm" or HitPart.Name == "LeftLowerArm" or HitPart.Name == "LeftHand" then				
-								Events.Damage:InvokeServer(WeaponTool, VitimaHuman, TotalDistTraveled, 2, WeaponData, ModTable, nil, nil, SKP_02)
+								Events.Damage:InvokeServer(FirearmProps.WeaponTool, humanoid, TotalDistTraveled, 2, FirearmProps.WeaponData, ModTable, nil, nil, SKP_02)
 							elseif HitPart.Name == "Right Leg" or HitPart.Name == "Left Leg" or HitPart.Name == "RightUpperLeg" or HitPart.Name == "RightLowerLeg" or HitPart.Name == "RightFoot" or HitPart.Name == "LeftUpperLeg" or HitPart.Name == "LeftLowerLeg" or HitPart.Name == "LeftFoot" then
-								Events.Damage:InvokeServer(WeaponTool, VitimaHuman, TotalDistTraveled, 3, WeaponData, ModTable, nil, nil, SKP_02)		
+								Events.Damage:InvokeServer(FirearmProps.WeaponTool, humanoid, TotalDistTraveled, 3, FirearmProps.WeaponData, ModTable, nil, nil, SKP_02)		
 							end	
 						end
 					end
