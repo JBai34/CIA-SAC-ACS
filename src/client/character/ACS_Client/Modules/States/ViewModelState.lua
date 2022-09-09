@@ -19,4 +19,6 @@ return {
     GunCFrame = CFrame.new(),
     LArmCFrame = CFrame.new(),
     RArmCFrame = CFrame.new(),
+    
+    BipodCFrame     = CFrame.new(),
 }

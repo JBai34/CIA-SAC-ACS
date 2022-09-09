@@ -25,12 +25,17 @@ local InputState		= require(States.InputState)
 local Props:Folder		= Modules.Props
 local FirearmProps 		= require(Props.FirearmProps)
 
+local Functions:Folder	= Modules.Functions
+local RunCheck				= require(Functions.RunCheck)
+local GunFx					= require(Functions.GunFX)
+local CheckForHumanoid		= require(Functions.CheckForHumanoid)
+local Recoil				= require(Functions.Recoil)
+local CalculateBulletSpread = require(Functions.CalculateBulletSpread)
+local CalculateTracer		= require(Functions.CalculateTracer)
+
 local Others:Folder 		= Modules.Others
-local CalculateBulletSpread = require(Others.CalculateBulletSpread)
-local CalculateTracer		= require(Others.CalculateTracer)
 local ModTable 				= require(Others.ModTable)
-local RunCheck				= require(Others.RunCheck)
-local GunFx					= require(Others.GunFX)
+
 -- ==
 --=====
 local ACS_Workspace = workspace:FindFirstChild("ACS_WorkSpace")
@@ -55,6 +60,96 @@ local WeaponAction = {}
 
 local Camera = workspace.CurrentCamera
 local IgnoreModel = {Camera,Character,ACS_Workspace.Client,ACS_Workspace.Server}
+--==
+local function JamChance()
+	if FirearmProps.WeaponData.CanBreak == true and not FirearmProps.WeaponData.Jammed and Ammo - 1 > 0 then
+		local Jam = math.random(1000)
+		if Jam <= 2 then
+			FirearmProps.WeaponData.Jammed = true
+			ViewModelState.WeaponInHand.Handle.Click:Play()
+		end
+	end
+end
+
+--==
+function WeaponAction:meleeCast()
+
+	-- Set an origin and directional vector
+	local rayOrigin 	= Camera.CFrame.Position
+	local rayDirection 	= Camera.CFrame.LookVector * FirearmProps.WeaponData.BladeRange
+
+	local raycastParams = RaycastParams.new()
+	raycastParams.FilterDescendantsInstances = IgnoreModel
+	raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+	raycastParams.IgnoreWater = true
+	local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+
+	if raycastResult then
+		local Hit2 = raycastResult.Instance
+
+		--Check if it's a hat or accessory
+		if Hit2 and Hit2.Parent:IsA('Accessory') or Hit2.Parent:IsA('Hat') then
+
+			for _,players in pairs(game.Players:GetPlayers()) do
+				if players.Character then
+					for _, hats in pairs(players.Character:GetChildren()) do
+						if hats:IsA("Accessory") then
+							table.insert(IgnoreModel, hats)
+						end
+					end
+				end
+			end
+
+			return self:meleeCast()
+		end
+
+		if Hit2 and Hit2.Name == "Ignorable" or Hit2.Name == "Glass" or Hit2.Name == "Ignore" or Hit2.Parent.Name == "Top" or Hit2.Parent.Name == "Helmet" or Hit2.Parent.Name == "Up" or Hit2.Parent.Name == "Down" or Hit2.Parent.Name == "Face" or Hit2.Parent.Name == "Olho" or Hit2.Parent.Name == "Headset" or Hit2.Parent.Name == "Numero" or Hit2.Parent.Name == "Vest" or Hit2.Parent.Name == "Chest" or Hit2.Parent.Name == "Waist" or Hit2.Parent.Name == "Back" or Hit2.Parent.Name == "Belt" or Hit2.Parent.Name == "Leg1" or Hit2.Parent.Name == "Leg2" or Hit2.Parent.Name == "Arm1"  or Hit2.Parent.Name == "Arm2" then
+			table.insert(IgnoreModel, Hit2)
+			return self:meleeCast()
+		end
+
+		if Hit2 and Hit2.Parent.Name == "Top" or Hit2.Parent.Name == "Helmet" or Hit2.Parent.Name == "Up" or Hit2.Parent.Name == "Down" or Hit2.Parent.Name == "Face" or Hit2.Parent.Name == "Olho" or Hit2.Parent.Name == "Headset" or Hit2.Parent.Name == "Numero" or Hit2.Parent.Name == "Vest" or Hit2.Parent.Name == "Chest" or Hit2.Parent.Name == "Waist" or Hit2.Parent.Name == "Back" or Hit2.Parent.Name == "Belt" or Hit2.Parent.Name == "Leg1" or Hit2.Parent.Name == "Leg2" or Hit2.Parent.Name == "Arm1"  or Hit2.Parent.Name == "Arm2" then
+			table.insert(IgnoreModel, Hit2.Parent)
+			return self:meleeCast()
+		end
+
+		if Hit2 and (Hit2.Transparency >= 1 or Hit2.CanCollide == false) and Hit2.Name ~= 'Head' and Hit2.Name ~= 'Right Arm' and Hit2.Name ~= 'Left Arm' and Hit2.Name ~= 'Right Leg' and Hit2.Name ~= 'Left Leg' and Hit2.Name ~= "UpperTorso" and Hit2.Name ~= "LowerTorso" and Hit2.Name ~= "RightUpperArm" and Hit2.Name ~= "RightLowerArm" and Hit2.Name ~= "RightHand" and Hit2.Name ~= "LeftUpperArm" and Hit2.Name ~= "LeftLowerArm" and Hit2.Name ~= "LeftHand" and Hit2.Name ~= "RightUpperLeg" and Hit2.Name ~= "RightLowerLeg" and Hit2.Name ~= "RightFoot" and Hit2.Name ~= "LeftUpperLeg" and Hit2.Name ~= "LeftLowerLeg" and Hit2.Name ~= "LeftFoot" and Hit2.Name ~= 'Armor' and Hit2.Name ~= 'EShield' then
+			table.insert(self:meleeCast(), Hit2)
+			return self:meleeCast()
+		end
+	end
+
+
+	if raycastResult then
+		local foundHumanoid, humanoid = CheckForHumanoid(raycastResult.Instance) -- returns boolean, humanoid
+		HitMod.HitEffect(IgnoreModel, raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, FirearmProps.WeaponData)
+		Events.HitEffect:FireServer(raycastResult.Position, raycastResult.Instance , raycastResult.Normal, raycastResult.Material, FirearmProps.WeaponData)
+
+		local HitPart = raycastResult.Instance
+
+		if foundHumanoid == true and humanoid.Health > 0 then
+			local SKP_02 = SKP_01.."-"..Player.UserId
+
+			if HitPart.Name == "Head" or HitPart.Parent.Name == "Top" or HitPart.Parent.Name == "Headset" or HitPart.Parent.Name == "Olho" or HitPart.Parent.Name == "Face" or HitPart.Parent.Name == "Numero" then
+				task.spawn(function()
+					Events.Damage:InvokeServer(FirearmProps.WeaponTool, humanoid, 0, 1, FirearmProps.WeaponData, ModTable, nil, nil, SKP_02)	
+				end)
+
+			elseif HitPart.Name == "Torso" or HitPart.Name == "UpperTorso" or HitPart.Name == "LowerTorso" or HitPart.Parent.Name == "Chest" or HitPart.Parent.Name == "Waist" or HitPart.Name == "RightUpperArm" or HitPart.Name == "RightLowerArm" or HitPart.Name == "RightHand" or HitPart.Name == "LeftUpperArm" or HitPart.Name == "LeftLowerArm" or HitPart.Name == "LeftHand" then
+				task.spawn(function()
+					Events.Damage:InvokeServer(FirearmProps.WeaponTool, humanoid, 0, 2, FirearmProps.WeaponData, ModTable, nil, nil, SKP_02)	
+				end)
+
+			elseif HitPart.Name == "Right Arm" or HitPart.Name == "Right Leg" or HitPart.Name == "Left Leg" or HitPart.Name == "Left Arm" or HitPart.Name == "RightUpperLeg" or HitPart.Name == "RightLowerLeg" or HitPart.Name == "RightFoot" or HitPart.Name == "LeftUpperLeg" or HitPart.Name == "LeftLowerLeg" or HitPart.Name == "LeftFoot" then
+				task.spawn(function()
+					Events.Damage:InvokeServer(FirearmProps.WeaponTool, humanoid, 0, 3, FirearmProps.WeaponData, ModTable, nil, nil, SKP_02)	
+				end)
+
+			end
+		end			
+	end
+end
 
 function WeaponAction:CastRay(_bullet, _origin)
 	if _bullet then
@@ -437,7 +532,7 @@ function WeaponAction:Shoot()
 				GunFx(FirearmProps, FirearmState, ViewModelState)
 				JamChance()
 				self:UpdateGui()
-				task.spawn(Recoil)
+				task.spawn(Recoil(FirearmProps.WeaponData))
 				task.wait(60/FirearmProps.WeaponData.ShootRate)
 				FirearmState.Shooting = false
 
@@ -455,7 +550,7 @@ function WeaponAction:Shoot()
 					GunFx(FirearmProps, FirearmState, ViewModelState)
 					JamChance()
 					self:UpdateGui()
-					task.spawn(Recoil)
+					task.spawn(Recoil(FirearmProps.WeaponData))
 					task.wait(60/FirearmProps.WeaponData.ShootRate)
 					FirearmState.Shooting = false
 
@@ -474,7 +569,7 @@ function WeaponAction:Shoot()
 					GunFx(FirearmProps, FirearmState, ViewModelState)
 					JamChance()
 					self:UpdateGui()
-					task.spawn(Recoil)
+					task.spawn(Recoil(FirearmProps.WeaponData))
 					task.wait(60/FirearmProps.WeaponData.ShootRate)
 					FirearmState.Shooting = false
 
@@ -488,7 +583,7 @@ function WeaponAction:Shoot()
 				Ammo = Ammo - 1
 				GunFx(FirearmProps, FirearmState, ViewModelState)
 				self:UpdateGui()
-				task.spawn(Recoil)
+				task.spawn(Recoil(FirearmProps.WeaponData))
 				PlayAnimation:PumpAnim()
 				RunCheck()
 				FirearmState.Shooting = false
@@ -499,8 +594,8 @@ function WeaponAction:Shoot()
 	elseif FirearmProps.WeaponData and FirearmProps.WeaponData.Type == "Melee" and not InputState.runKeyDown then
 		if not FirearmState.Shooting then
 			FirearmState.Shooting = true
-			meleeCast()
-			meleeAttack()
+			self:meleeCast()
+			PlayAnimation:meleeAttack()
 			RunCheck()
 			FirearmState.Shooting = false
 		end
@@ -509,7 +604,7 @@ end
 
 function WeaponAction:Unset(tool)
 	FirearmState.CurrentlyEquippingTool = false
-	Events.Equip:FireServer(WeaponTool,2)
+	Events.Equip:FireServer(FirearmProps.WeaponTool,2)
 	--unsetup weapon data module
 	CAS:UnbindAction("Fire")
 	CAS:UnbindAction("ADS")
@@ -576,21 +671,21 @@ function WeaponAction:Unset(tool)
 		FirearmProps.Suppressor = false
 		FirearmProps.FlashHider = false
 
-		CancelReload 	= false
-		reloading 		= false
-		SafeMode		= false
-		CheckingMag		= false
-		GRDebounce 		= false
-		GunStance 		= 0
+		FirearmState.CancelReload 	= false
+		FirearmState.Reloading 		= false
+		FirearmState.SafeMode		= false
+		FirearmState.CheckingMag	= false
+		FirearmState.GRDebounce 	= false
+		FirearmState.GunStance 		= 0
 		resetMods()
-		generateBullet 	= 1
-		AimPartMode 	= 1
+		FirearmState.AimPartMode 	= 1
+		FirearmState.GenerateBullet = 1
 
 		SE_GUI.GunHUD.Visible = false
 		SE_GUI.GrenadeForce.Visible = false
-		BipodCF = CFrame.new()
+		ViewModelState.BipodCFrame = CFrame.new()
 		if gameRules.ReplicatedLaser then
-			Events.SVLaser:FireServer(nil,2,nil,false,WeaponTool)
+			Events.SVLaser:FireServer(nil,2,nil,false,FirearmProps.WeaponTool)
 		end
 	end
 end
