@@ -20,5 +20,7 @@ return {
     LArmCFrame = CFrame.new(),
     RArmCFrame = CFrame.new(),
     
+    AnimDebounce = false;
+    
     BipodCFrame     = CFrame.new(),
 }

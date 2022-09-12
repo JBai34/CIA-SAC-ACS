@@ -11,6 +11,7 @@ return {
     IRLaserActive = false,
     FlashLightActive = false,
     BipodActive = false,
+    Jammed = false,
     
     LastSpreadUpdate = time(),
     

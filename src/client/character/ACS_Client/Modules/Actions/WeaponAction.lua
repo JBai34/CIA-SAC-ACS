@@ -32,6 +32,7 @@ local CheckForHumanoid		= require(Functions.CheckForHumanoid)
 local Recoil				= require(Functions.Recoil)
 local CalculateBulletSpread = require(Functions.CalculateBulletSpread)
 local CalculateTracer		= require(Functions.CalculateTracer)
+local ResetMods				= require(Functions.ResetMods)
 
 local Others:Folder 		= Modules.Others
 local ModTable 				= require(Others.ModTable)
@@ -62,16 +63,108 @@ local Camera = workspace.CurrentCamera
 local IgnoreModel = {Camera,Character,ACS_Workspace.Client,ACS_Workspace.Server}
 --==
 local function JamChance()
-	if FirearmProps.WeaponData.CanBreak == true and not FirearmProps.WeaponData.Jammed and Ammo - 1 > 0 then
+	if FirearmProps.WeaponData.CanBreak == true and not FirearmState.Jammed and Ammo - 1 > 0 then
 		local Jam = math.random(1000)
 		if Jam <= 2 then
-			FirearmProps.WeaponData.Jammed = true
+			FirearmState.Jammed = true
 			ViewModelState.WeaponInHand.Handle.Click:Play()
 		end
 	end
 end
 
 --==
+function WeaponAction:Jammed()
+	if FirearmProps.WeaponData.Type == "Gun" and FirearmProps.WeaponData.Jammed then
+
+		InputState.Mouse1down = false
+		FirearmState.Reloading = true
+		FirearmState.SafeMode = false
+		FirearmState.GunStance = 0
+		Events.GunStance:FireServer(FirearmState.GunStance,ViewModelState.AnimData)
+		UpdateGui()
+
+		PlayAnimation:JammedAnim()
+		FirearmState.Jammed = false
+		UpdateGui()
+		FirearmState.Reloading = false
+		RunCheck()
+	end
+end
+
+function WeaponAction.Reload()
+	if FirearmProps.WeaponData.Type == "Gun" and StoredAmmo > 0 and (FirearmProps.Ammo < FirearmProps.WeaponData.Ammo or FirearmProps.WeaponData.IncludeChamberedBullet and FirearmProps.Ammo < FirearmProps.WeaponData.Ammo + 1) then
+
+		InputState.Mouse1down = false
+		FirearmState.Reloading = true
+		FirearmState.SafeMode = false
+		FirearmState.GunStance = 0
+		Events.GunStance:FireServer(FirearmState.GunStance,ViewModelState.AnimData)
+		UpdateGui()
+
+		if FirearmProps.WeaponData.ShellInsert then -- shell insert scenario
+			if FirearmProps.Ammo > 0 then
+				for _ = 1,FirearmProps.Ammo - FirearmProps.Ammo do
+					if FirearmProps.StoredAmmo > 0 and Ammo < FirearmProps.Ammo then
+						if FirearmState.CancelReload then
+							break
+						end
+						PlayAnimation.ReloadAnim()
+						FirearmProps.Ammo = FirearmProps.Ammo + 1
+						FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
+						UpdateGui()
+					end
+				end
+				
+			else
+				PlayAnimation:TacticalReloadAnim()
+				FirearmProps.Ammo = FirearmProps.Ammo + 1
+				FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
+				UpdateGui()
+				for _ = 1,FirearmProps.Ammo - Ammo do
+					if FirearmProps.StoredAmmo > 0 and Ammo < FirearmProps.Ammo then
+						if FirearmState.CancelReload then
+							break
+						end
+						ReloadAnim()
+						FirearmProps.Ammo = FirearmProps.Ammo + 1
+						FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
+						UpdateGui()
+					end
+				end
+
+			end
+			
+		else -- every other gun
+			if FirearmProps.Ammo > 0 then
+				PlayAnimation:ReloadAnim()
+			else
+				TacticalReloadAnim()
+			end
+
+			if (FirearmProps.Ammo - (FirearmProps.Ammo - FirearmProps.StoredAmmo)) < 0 then
+				FirearmProps.Ammo = FirearmProps.Ammo + FirearmProps.StoredAmmo
+				FirearmProps.StoredAmmo = 0
+
+			elseif FirearmProps.Ammo <= 0 then
+				FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - (FirearmProps.Ammo - FirearmProps.Ammo)
+				FirearmProps.Ammo = FirearmProps.Ammo
+
+			elseif FirearmProps.Ammo > 0 and FirearmProps.IncludeChamberedBullet then
+				FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - (FirearmProps.Ammo - FirearmProps.Ammo) - 1
+				FirearmProps.Ammo = FirearmProps.Ammo + 1
+
+			elseif FirearmProps.Ammo > 0 and not FirearmProps.IncludeChamberedBullet then
+				FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - (FirearmProps.Ammo - FirearmProps.Ammo)
+				FirearmProps.Ammo = FirearmProps.Ammo
+			end
+		end
+		FirearmState.CancelReload = false
+		FirearmState.Reloading = false
+		RunCheck()
+		UpdateGui()
+	end
+end
+
 function WeaponAction:meleeCast()
 
 	-- Set an origin and directional vector
@@ -290,7 +383,7 @@ function WeaponAction:UpdateGui()
 				HUD.E.Visible = false
 			end]]
 
-			if FirearmProps.WeaponData.Jammed then
+			if FirearmState.Jammed then
 				HUD.B.BackgroundColor3 = Color3.fromRGB(255,0,0)
 			else
 				HUD.B.BackgroundColor3 = Color3.fromRGB(255,255,255)
@@ -509,17 +602,17 @@ function WeaponAction:Shoot()
 	if FirearmProps.WeaponData and FirearmProps.WeaponData.Type == "Gun" and not FirearmState.Shooting and not FirearmState.Reloading then
 
 		if FirearmState.Reloading or InputState.runKeyDown or FirearmState.SafeMode or FirearmState.CheckingMag then
-			mouse1down = false
+			InputState.Mouse1down = false
 			return
 		end
 
-		if Ammo <= 0 or FirearmProps.WeaponData.Jammed then
+		if Ammo <= 0 or FirearmState.Jammed then
 			ViewModelState.WeaponInHand.Handle.Click:Play()
-			mouse1down = false
+			InputState.Mouse1down = false
 			return
 		end
 
-		mouse1down = true
+		InputState.Mouse1down = true
 
 		task.defer(function()
 			if FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 1 then 
@@ -538,7 +631,7 @@ function WeaponAction:Shoot()
 
 			elseif FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 2 then
 				for i = 1, FirearmProps.WeaponData.BurstShot do
-					if FirearmState.Shooting or Ammo <= 0 or mouse1down == false or FirearmProps.WeaponData.Jammed then
+					if FirearmState.Shooting or Ammo <= 0 or InputState.Mouse1down == false or FirearmState.Jammed then
 						break
 					end
 					FirearmState.Shooting = true	
@@ -556,8 +649,8 @@ function WeaponAction:Shoot()
 
 				end
 			elseif FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 3 then
-				while mouse1down do
-					if FirearmState.Shooting or Ammo <= 0 or FirearmProps.WeaponData.Jammed then
+				while InputState.Mouse1down do
+					if FirearmState.Shooting or Ammo <= 0 or FirearmState.Jammed then
 						break
 					end
 					FirearmState.Shooting = true	
@@ -617,7 +710,7 @@ function WeaponAction:Unset(tool)
 	CAS:UnbindAction("ZeroDown")
 	CAS:UnbindAction("CheckMag")
 
-	InputState.mouse1down = false
+	InputState.InputState.Mouse1down = false
 	FirearmState.Aiming = false
 
 	TS:Create(Camera,
@@ -677,7 +770,7 @@ function WeaponAction:Unset(tool)
 		FirearmState.CheckingMag	= false
 		FirearmState.GRDebounce 	= false
 		FirearmState.GunStance 		= 0
-		resetMods()
+		ResetMods()
 		FirearmState.AimPartMode 	= 1
 		FirearmState.GenerateBullet = 1
 

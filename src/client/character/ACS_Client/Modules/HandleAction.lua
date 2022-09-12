@@ -1,26 +1,93 @@
+local Debris = game:GetService("Debris")
+local Players = game:GetService("Players")
+local ReplicatedStorage= game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local TS = game:GetService("TweenService")
+local CAS = game:GetService("ContextActionService")
+
+local Player   = Players.LocalPlayer
+local Character = Player.Character
+--=====
+local ACSClient:Folder  = script.Parent.Parent.Parent
+local Modules:Folder 	= ACSClient.Modules
+
+local Actions:Folder	= Modules.Actions
+local PlayAnimation		= require(Actions.PlayAnimation)
+local WeaponAction		= require(Actions.WeaponAction)
+
+local States:Folder 	= Modules.States
+local FirearmState 		= require(States.FirearmState)
+local ViewModelState 	= require(States.ViewModelState)
+local CharacterState 	= require(States.CharacterState)
+local InputState		= require(States.InputState)
+
+local Props:Folder		= Modules.Props
+local FirearmProps 		= require(Props.FirearmProps)
+
+local Functions:Folder	= Modules.Functions
+local RunCheck				= require(Functions.RunCheck)
+local GunFx					= require(Functions.GunFX)
+local CheckForHumanoid		= require(Functions.CheckForHumanoid)
+local Recoil				= require(Functions.Recoil)
+local CalculateBulletSpread = require(Functions.CalculateBulletSpread)
+local CalculateTracer		= require(Functions.CalculateTracer)
+local ResetMods				= require(Functions.ResetMods)
+
+local Others:Folder 		= Modules.Others
+local ModTable 				= require(Others.ModTable)
+
+-- ==
+--=====
+local ACS_Workspace = workspace:FindFirstChild("ACS_WorkSpace")
+local Engine 		= ReplicatedStorage:FindFirstChild("ACS_Engine")
+local Events 		= Engine:FindFirstChild("Events")
+local Mods 			= Engine:FindFirstChild("Modules")
+local HUDs 			= Engine:FindFirstChild("HUD")
+local Essential 	= Engine:FindFirstChild("Essential")
+local ArmModel 		= Engine:FindFirstChild("ArmModel")
+local GunModels 	= Engine:FindFirstChild("GunModels")
+local AttModels 	= Engine:FindFirstChild("AttModels")
+local AttModules  	= Engine:FindFirstChild("AttModules")
+local Rules			= Engine:FindFirstChild("GameRules")
+local PastaFx		= Engine:FindFirstChild("FX")
+local gameRules		         = require(Rules:WaitForChild("Config"))
+local SpringMod 	         = require(Mods:WaitForChild("Spring"))
+local HitMod 		         = require(Mods:WaitForChild("Hitmarker"))
+local Thread 		         = require(Mods:WaitForChild("Thread"))
+local Ultil			         = require(Mods:WaitForChild("Utilities"))
+--=========================================================
+
+local Camera = workspace.CurrentCamera
+local IgnoreModel = {Camera,Character,ACS_Workspace.Client,ACS_Workspace.Server}
+
 return function(actionName, inputState, inputObject)
 
-	if actionName == "Fire" and inputState == Enum.UserInputState.Begin and AnimDebounce then
-		Shoot()
+	if actionName == "Fire" then
+		if inputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce then
+			WeaponAction:Shoot()
 
-		if WeaponData.Type == "Grenade" then
-			Grenade()
+			--[[
+			if FirearmProps.WeaponData.Type == "Grenade" then
+				WeaponAction:Grenade()
+			end
+			]]
+		elseif inputState == Enum.UserInputState.End then
+			InputState.Mouse1down = false
 		end
-
-	elseif actionName == "Fire" and inputState == Enum.UserInputState.End then
-		mouse1down = false
 	end
+		
 
-	if actionName == "Reload" and inputState == Enum.UserInputState.Begin and AnimDebounce and not CheckingMag and not reloading then
-		if WeaponData.Jammed then
-			Jammed()
+	if actionName == "Reload" and inputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce and not FirearmState.CheckingMag and not FirearmState.Reloading then
+		if FirearmState.Jammed then
+			WeaponAction:Jammed()
 		else
-			Reload()
+			WeaponAction:Reload()
 		end
 	end
 
-	if actionName == "Reload" and inputState == Enum.UserInputState.Begin and reloading and WeaponData.ShellInsert then
-		CancelReload = true
+	if actionName == "Reload" and inputState == Enum.UserInputState.Begin and FirearmState.Reloading and FirearmProps.WeaponData.ShellInsert then
+		FirearmState.CancelReload = true
 	end
 
 	if actionName == "CycleLaser" and inputState == Enum.UserInputState.Begin and LaserAtt then
@@ -55,7 +122,7 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "CheckMag" and inputState == Enum.UserInputState.Begin and not CheckingMag and not reloading and not runKeyDown and AnimDebounce then
+	if actionName == "CheckMag" and inputState == Enum.UserInputState.Begin and not CheckingMag and not reloading and not runKeyDown and ViewModelState.AnimDebounce then
 		CheckMagFunction()
 	end
 
@@ -83,7 +150,7 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "ADS" and inputState == Enum.UserInputState.Begin and AnimDebounce then
+	if actionName == "ADS" and inputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce then
 		if WeaponData and WeaponData.canAim and GunStance > -2 and not runKeyDown and not CheckingMag then
 			aimming = not aimming
 			ADS(aimming)

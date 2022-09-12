@@ -1,7 +1,7 @@
 return {
     runKeyDown 	= false,
-    mouse1down = false,
-    mouse2down = false,
+    Mouse1down = false,
+    Mouse2down = false,
     MouseSensitivity = 50,
     Power 		    = 150
 }
