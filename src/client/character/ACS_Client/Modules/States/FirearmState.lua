@@ -16,7 +16,7 @@ return {
     LastSpreadUpdate = time(),
     
     reticle = nil,   
-    IRmode = false,
+    LaserPointer = nil,
     
     CancelReload = false,
     

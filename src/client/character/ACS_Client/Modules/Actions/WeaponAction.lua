@@ -71,7 +71,74 @@ local function JamChance()
 		end
 	end
 end
+--==
+function WeaponAction:SetLaser()
+	if gameRules.RealisticLaser and FirearmProps.HasIR then
+		if FirearmState.LaserActive == false and FirearmState.IRLaserActive == false then
+			FirearmState.LaserActive = true
+			FirearmState.IRLaserActive 		= true
 
+		elseif FirearmState.LaserActive and FirearmState.IRLaserActive then
+			FirearmState.IRLaserActive 		= false
+		else
+			FirearmState.LaserActive = false
+			FirearmState.IRLaserActive 		= false
+		end
+	else
+		FirearmState.LaserActive = not FirearmState.LaserActive
+	end
+
+	print(FirearmState.LaserActive, FirearmState.IRLaserActive)
+
+	if FirearmState.LaserActive then
+		if not FirearmState.LaserPointer then
+			for _, v in pairs(ViewModelState.WeaponInHand:GetDescendants()) do
+				if v:IsA("BasePart") and v.Name == "LaserPoint" then
+					local LaserPointer = Instance.new('Part',v)
+					LaserPointer.Shape = 'Ball'
+					LaserPointer.Size = Vector3.new(0.2, 0.2, 0.2)
+					LaserPointer.CanCollide = false
+					LaserPointer.Color = v.Color
+					LaserPointer.Material = Enum.Material.Neon
+
+					local LaserSP = Instance.new('Attachment',v)			
+					local LaserEP = Instance.new('Attachment',LaserPointer)
+
+					local Laser = Instance.new('Beam',LaserPointer)
+					Laser.Transparency = NumberSequence.new(0)
+					Laser.LightEmission = 1
+					Laser.LightInfluence = 1
+					Laser.Attachment0 = LaserSP
+					Laser.Attachment1 = LaserEP
+					Laser.Color = ColorSequence.new(v.Color)
+					Laser.FaceCamera = true
+					Laser.Width0 = 0.01
+					Laser.Width1 = 0.01
+
+					if gameRules.RealisticLaser then
+						Laser.Enabled = false
+					end
+
+					FirearmState.LaserPointer = LaserPointer
+					break
+				end
+			end
+		end
+	else
+		for _, v in pairs(ViewModelState.WeaponInHand:GetDescendants()) do
+			if v:IsA("BasePart") and v.Name == "LaserPoint" then
+				v:ClearAllChildren()
+				break
+			end
+		end
+		FirearmState.LaserPointer = nil
+		if gameRules.ReplicatedLaser then
+			Events.SVLaser:FireServer(nil,2,nil,false,FirearmProps.WeaponTool)
+		end
+	end
+	ViewModelState.WeaponInHand.Handle.Click:play()
+	UpdateGui()
+end
 --==
 function WeaponAction:Jammed()
 	if FirearmProps.WeaponData.Type == "Gun" and FirearmProps.WeaponData.Jammed then
@@ -92,7 +159,7 @@ function WeaponAction:Jammed()
 end
 
 function WeaponAction.Reload()
-	if FirearmProps.WeaponData.Type == "Gun" and StoredAmmo > 0 and (FirearmProps.Ammo < FirearmProps.WeaponData.Ammo or FirearmProps.WeaponData.IncludeChamberedBullet and FirearmProps.Ammo < FirearmProps.WeaponData.Ammo + 1) then
+	if FirearmProps.WeaponData.Type == "Gun" and FirearmProps.StoredAmmo > 0 and (FirearmProps.Ammo < FirearmProps.WeaponData.Ammo or FirearmProps.WeaponData.IncludeChamberedBullet and FirearmProps.Ammo < FirearmProps.WeaponData.Ammo + 1) then
 
 		InputState.Mouse1down = false
 		FirearmState.Reloading = true
@@ -108,7 +175,7 @@ function WeaponAction.Reload()
 						if FirearmState.CancelReload then
 							break
 						end
-						PlayAnimation.ReloadAnim()
+						PlayAnimation:ReloadAnim()
 						FirearmProps.Ammo = FirearmProps.Ammo + 1
 						FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
 						UpdateGui()
@@ -125,7 +192,7 @@ function WeaponAction.Reload()
 						if FirearmState.CancelReload then
 							break
 						end
-						ReloadAnim()
+						PlayAnimation:ReloadAnim()
 						FirearmProps.Ammo = FirearmProps.Ammo + 1
 						FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
 						UpdateGui()
@@ -138,7 +205,7 @@ function WeaponAction.Reload()
 			if FirearmProps.Ammo > 0 then
 				PlayAnimation:ReloadAnim()
 			else
-				TacticalReloadAnim()
+				PlayAnimation:TacticalReloadAnim()
 			end
 
 			if (FirearmProps.Ammo - (FirearmProps.Ammo - FirearmProps.StoredAmmo)) < 0 then

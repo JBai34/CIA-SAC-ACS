@@ -90,10 +90,10 @@ return function(actionName, inputState, inputObject)
 		FirearmState.CancelReload = true
 	end
 
-	if actionName == "CycleLaser" and inputState == Enum.UserInputState.Begin and LaserAtt then
-		SetLaser()
+	if actionName == "CycleLaser" and inputState == Enum.UserInputState.Begin and FirearmProps.HasLaser then
+		WeaponAction:SetLaser()
 	end
-
+	
 	if actionName == "CycleLight" and inputState == Enum.UserInputState.Begin and TorchAtt then
 		SetTorch()
 	end
