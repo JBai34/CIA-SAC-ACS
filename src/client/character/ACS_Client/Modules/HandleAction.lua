@@ -9,8 +9,8 @@ local CAS = game:GetService("ContextActionService")
 local Player   = Players.LocalPlayer
 local Character = Player.Character
 --=====
-local ACSClient:Folder  = script.Parent.Parent.Parent
-local Modules:Folder 	= ACSClient.Modules
+local ACSClient:LocalScript  = script.Parent.Parent
+local Modules 	= ACSClient:FindFirstChild("Modules")
 
 local Actions:Folder	= Modules.Actions
 local PlayAnimation		= require(Actions.PlayAnimation)
