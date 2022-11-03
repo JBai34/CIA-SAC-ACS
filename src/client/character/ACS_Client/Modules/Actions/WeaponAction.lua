@@ -158,7 +158,33 @@ function WeaponAction:Jammed()
 	end
 end
 
-function WeaponAction.Reload()
+function WeaponAction:Firemode()
+
+	ViewModelState.WeaponInHand.Handle.SafetyClick:Play()
+	InputState.Mouse1down = false
+
+	---Semi Settings---		
+	if FirearmProps.WeaponData.ShootType == 1 and FirearmProps.WeaponData.FireModes.Burst == true then
+		FirearmProps.WeaponData.ShootType = 2
+	elseif FirearmProps.WeaponData.ShootType == 1 and FirearmProps.WeaponData.FireModes.Burst == false and FirearmProps.WeaponData.FireModes.Auto == true then
+		FirearmProps.WeaponData.ShootType = 3
+		---Burst Settings---
+	elseif FirearmProps.WeaponData.ShootType == 2 and FirearmProps.WeaponData.FireModes.Auto == true then
+		FirearmProps.WeaponData.ShootType = 3
+	elseif FirearmProps.WeaponData.ShootType == 2 and FirearmProps.WeaponData.FireModes.Semi == true and FirearmProps.WeaponData.FireModes.Auto == false then
+		FirearmProps.WeaponData.ShootType = 1
+		---Auto Settings---
+	elseif FirearmProps.WeaponData.ShootType == 3 and FirearmProps.WeaponData.FireModes.Semi == true then
+		FirearmProps.WeaponData.ShootType = 1
+	elseif FirearmProps.WeaponData.ShootType == 3 and FirearmProps.WeaponData.FireModes.Semi == false and FirearmProps.WeaponData.FireModes.Burst == true then
+		FirearmProps.WeaponData.ShootType = 2
+		---Explosive Settings---
+	end
+	UpdateGui()
+
+end
+
+function WeaponAction:Reload()
 	if FirearmProps.WeaponData.Type == "Gun" and FirearmProps.StoredAmmo > 0 and (FirearmProps.Ammo < FirearmProps.WeaponData.Ammo or FirearmProps.WeaponData.IncludeChamberedBullet and FirearmProps.Ammo < FirearmProps.WeaponData.Ammo + 1) then
 
 		InputState.Mouse1down = false
