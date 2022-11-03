@@ -9,38 +9,38 @@ local CAS = game:GetService("ContextActionService")
 local Player   = Players.LocalPlayer
 local Character = Player.Character
 --=====
-local ACSClient:Folder  = script.Parent.Parent.Parent
-local Modules:Folder 	= ACSClient.Modules
+local ACSClient = script.Parent.Parent
+local Modules		  	= ACSClient.Modules
 
-local Actions:Folder	= Modules.Actions
+local Actions			= Modules.Actions
 local PlayAnimation		= require(Actions.PlayAnimation)
 local WeaponAction		= require(Actions.WeaponAction)
 
-local States:Folder 	= Modules.States
+local States		 	= Modules.States
 local FirearmState 		= require(States.FirearmState)
 local ViewModelState 	= require(States.ViewModelState)
 local CharacterState 	= require(States.CharacterState)
 local InputState		= require(States.InputState)
 
-local Props:Folder		= Modules.Props
+local Props				= Modules.Props
 local FirearmProps 		= require(Props.FirearmProps)
 
-local Functions:Folder	= Modules.Functions
+local Functions				= Modules.Functions
 local RunCheck				= require(Functions.RunCheck)
-local GunFx					= require(Functions.GunFX)
 local CheckForHumanoid		= require(Functions.CheckForHumanoid)
 local Recoil				= require(Functions.Recoil)
 local CalculateBulletSpread = require(Functions.CalculateBulletSpread)
 local CalculateTracer		= require(Functions.CalculateTracer)
 local ResetMods				= require(Functions.ResetMods)
 
-local Others:Folder 		= Modules.Others
+local Others		 		= Modules.Others
 local ModTable 				= require(Others.ModTable)
+local GunFx					= require(Others.GunFX)
 
 -- ==
 --=====
 local ACS_Workspace = workspace:FindFirstChild("ACS_WorkSpace")
-local Engine 		= ReplicatedStorage:FindFirstChild("ACS_Engine")
+local Engine 		 = ReplicatedStorage:FindFirstChild("ACS_Engine")
 local Events 		= Engine:FindFirstChild("Events")
 local Mods 			= Engine:FindFirstChild("Modules")
 local HUDs 			= Engine:FindFirstChild("HUD")
