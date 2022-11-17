@@ -31,12 +31,7 @@
       "StarterCharacterScripts": {
           "$className": "StarterCharacterScripts",
           "$path": "src/client/character",
-          "$ignoreUnknownInstances": true,
-          
-          "ACS_Client": {
-            "$path": "src/client/character/ACS_Client"
-          }
-          
+          "$ignoreUnknownInstances": true
         }
     },
 

@@ -1,4 +1,5 @@
-if not game:GetService("Players").LocalPlayer.Character then game:GetService("Players").LocalPlayer.CharacterAdded:Wait() end
+--[[
+	if not game:GetService("Players").LocalPlayer.Character then game:GetService("Players").LocalPlayer.CharacterAdded:Wait() end
 
 local Player 			= game.Players.LocalPlayer
 local char 			    = Player.Character or Player.CharacterAdded:Wait()
@@ -1485,7 +1486,7 @@ function UpdateGui()
 				HUD.E.Visible = true
 			elseif Settings.FireModes.Explosive == false then
 				HUD.E.Visible = false
-			end]]
+			end
 
 			if WeaponData.Jammed then
 				HUD.B.BackgroundColor3 = Color3.fromRGB(255,0,0)
@@ -2622,3 +2623,4 @@ Events.Refil.OnClientEvent:Connect(function(Tool, Infinite, Stored)
 
 end)
 ----------//Events\\----------
+]]

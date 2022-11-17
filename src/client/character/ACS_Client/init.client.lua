@@ -1,11 +1,11 @@
 local Players = game:GetService("Players")
 --=====
-local Modules:Folder = script.Modules
-local States: Folder = Modules.States
+local Modules = script.Modules
+local States = Modules.States
 local FirearmState = require(States.FirearmState)
 
-local Actions: Folder = Modules.Actions
-local WeaponAction = require(Actions.FirearmAction)
+local Actions = Modules.Actions
+local WeaponAction = require(Actions.WeaponAction)
 
 local Props = Modules.Props
 local FirearmProps = require(Props.FirearmProps)
