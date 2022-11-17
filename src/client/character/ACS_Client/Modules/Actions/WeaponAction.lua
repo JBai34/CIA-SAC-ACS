@@ -961,7 +961,10 @@ function WeaponAction:Setup(tool)
 		ModTable.Zoom2Value 	= FirearmProps.WeaponData.Zoom2
 		FirearmProps.HasIR		= FirearmProps.WeaponData.InfraRed
 
-
+		--[[
+			All CAS action should be moved to either handle action or init
+			or moved to an individual module
+		]]
 		CAS:BindAction("Fire", 			HandleAction, true, 	Enum.UserInputType.MouseButton1, 	Enum.KeyCode.ButtonR2)
 		CAS:BindAction("ADS", 			HandleAction, true, 	Enum.UserInputType.MouseButton2, 	Enum.KeyCode.ButtonL2) 
 		CAS:BindAction("Reload", 		HandleAction, true, 	Enum.KeyCode.R, 					Enum.KeyCode.ButtonB )

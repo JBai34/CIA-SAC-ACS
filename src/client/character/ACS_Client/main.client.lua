@@ -1,6 +1,6 @@
 local Players = game:GetService("Players")
 --=====
-local Modules = script.Modules
+local Modules = script.Parent.Modules
 local States = Modules.States
 local FirearmState = require(States.FirearmState)
 
