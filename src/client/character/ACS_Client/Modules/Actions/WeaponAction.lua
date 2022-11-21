@@ -963,7 +963,7 @@ function WeaponAction:Setup(tool)
 
 		--[[
 			All CAS action should be moved to either handle action or init
-			or moved to an individual module
+			or moved to an individual module to avoid cylic reference
 		]]
 		CAS:BindAction("Fire", 			HandleAction, true, 	Enum.UserInputType.MouseButton1, 	Enum.KeyCode.ButtonR2)
 		CAS:BindAction("ADS", 			HandleAction, true, 	Enum.UserInputType.MouseButton2, 	Enum.KeyCode.ButtonL2) 
