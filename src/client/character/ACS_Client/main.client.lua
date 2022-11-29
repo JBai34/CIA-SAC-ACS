@@ -5,7 +5,7 @@ local States = Modules.States
 local FirearmState = require(States.FirearmState)
 
 local Actions = Modules.Actions
-local WeaponAction = require(Actions.WeaponAction)
+local EquipAction = require(Actions.EquipAction)
 
 local Props = Modules.Props
 local FirearmProps = require(Props.FirearmProps)
@@ -30,13 +30,13 @@ Character.ChildAdded:Connect(function(tool)
 		if notDriving then
 			if not FirearmState.CurrentlyEquippingTool then
 				--pcall(function()
-				WeaponAction:Setup(tool)
+				EquipAction:Setup(tool)
 				--end)
 
 			elseif FirearmState.CurrentlyEquippingTool then
 				pcall(function()
-					WeaponAction:Unset(tool)
-					WeaponAction:Setup(tool)
+					EquipAction:Unset(tool)
+					EquipAction:Setup(tool)
 				end)
 			end;
 		end;
@@ -47,7 +47,7 @@ end)
 Character.ChildRemoved:Connect(function(tool)
 	if tool == FirearmProps.WeaponTool then
 		if FirearmState.CurrentlyEquippingTool then
-			WeaponAction:Unset(tool)
+			EquipAction:Unset(tool)
 		end
 	end
 end)

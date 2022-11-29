@@ -1,4 +1,4 @@
-local RAND = require(script.Parent.RAND)
+local RAND = require(script.Parent.Parent.Others.RAND)
 
 local function GetBulletSpread(FirearmProps, CharacterState)
     local WalkMultiplier = FirearmProps.WeaponData.WalkMul
@@ -9,8 +9,8 @@ end
 
 return function(FirearmProps, CharacterState)
     return CFrame.Angles(
-		math.rad(RAND(GetBulletSpread(FirearmProps, CharacterState))),
-		math.rad(RAND(GetBulletSpread(FirearmProps, CharacterState))),
-		math.rad(RAND(GetBulletSpread(FirearmProps, CharacterState)))
+      math.rad(RAND(GetBulletSpread(FirearmProps, CharacterState))),
+      math.rad(RAND(GetBulletSpread(FirearmProps, CharacterState))),
+      math.rad(RAND(GetBulletSpread(FirearmProps, CharacterState)))
     )
 end

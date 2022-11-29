@@ -1,7 +1,9 @@
 {
     "robloxLsp.diagnostics.disable": [
         "trailing-space",
-        1017
+        "1017",
+        "1020",
+        "1002",
     ],
     "luau-lsp.diagnostics.workspace": false,
     "luau-lsp.diagnostics.includeDependents": false

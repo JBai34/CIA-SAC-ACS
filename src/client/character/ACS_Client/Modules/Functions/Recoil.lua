@@ -9,49 +9,28 @@ local CAS = game:GetService("ContextActionService")
 local Player   = Players.LocalPlayer
 local Character = Player.Character
 --=====
-local ACSClient:Folder  = script.Parent.Parent.Parent
-local Modules:Folder 	= ACSClient.Modules
-local HandleAction		= require(Modules.HandleAction)
+local ACSClient  = script.Parent.Parent.Parent
+local Modules 	= ACSClient.Modules
 
-local Actions:Folder	= Modules.Actions
-local PlayAnimation		= require(Actions.PlayAnimation)
 
-local States:Folder 	= Modules.States
-local FirearmState 		= require(States.FirearmState)
+local States 		= Modules.States
+local FirearmState		= require(States.FirearmState)
 local ViewModelState 	= require(States.ViewModelState)
 local CharacterState 	= require(States.CharacterState)
 local InputState		= require(States.InputState)
 
-local Props:Folder		= Modules.Props
+local Props		= Modules.Props
 local FirearmProps 		= require(Props.FirearmProps)
 
-local Others:Folder 		= Modules.Others
-local CalculateBulletSpread = require(Others.CalculateBulletSpread)
-local CalculateTracer		= require(Others.CalculateTracer)
-local ModTable 				= require(Others.ModTable)
-local RAND                  = require(Others.RAND)
-local RunCheck				= require(Others.RunCheck)
-local GunFx					= require(Others.GunFX)
-local CheckForHumanoid		= require(Others.CheckForHumanoid)
+local Others 		= Modules.Others
+local ModTable 		= require(Others.ModTable)
+local RAND       = require(Others.RAND)
+
 -- ==
---=====
-local ACS_Workspace = workspace:FindFirstChild("ACS_WorkSpace")
 local Engine 		= ReplicatedStorage:FindFirstChild("ACS_Engine")
-local Events 		= Engine:FindFirstChild("Events")
 local Mods 			= Engine:FindFirstChild("Modules")
-local HUDs 			= Engine:FindFirstChild("HUD")
-local Essential 	= Engine:FindFirstChild("Essential")
-local ArmModel 		= Engine:FindFirstChild("ArmModel")
-local GunModels 	= Engine:FindFirstChild("GunModels")
-local AttModels 	= Engine:FindFirstChild("AttModels")
-local AttModules  	= Engine:FindFirstChild("AttModules")
-local Rules			= Engine:FindFirstChild("GameRules")
-local PastaFx		= Engine:FindFirstChild("FX")
-local gameRules		         = require(Rules:WaitForChild("Config"))
 local SpringMod 	         = require(Mods:WaitForChild("Spring"))
-local HitMod 		         = require(Mods:WaitForChild("Hitmarker"))
-local Thread 		         = require(Mods:WaitForChild("Thread"))
-local Ultil			         = require(Mods:WaitForChild("Utilities"))
+
 --=========================================================
 local RecoilSpring = SpringMod.new(Vector3.new())
 RecoilSpring.d = .1

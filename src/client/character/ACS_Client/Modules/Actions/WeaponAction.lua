@@ -9,23 +9,22 @@ local CAS = game:GetService("ContextActionService")
 local Player   = Players.LocalPlayer
 local Character = Player.Character
 --=====
-local ACSClient:Folder  = script.Parent.Parent.Parent
-local Modules:Folder 	= ACSClient.Modules
-local HandleAction		= require(Modules.HandleAction)
+local ACSClient			= script.Parent.Parent.Parent
+local Modules 			= ACSClient.Modules
 
-local Actions:Folder	= Modules.Actions
+local Actions	= Modules.Actions
 local PlayAnimation		= require(Actions.PlayAnimation)
 
-local States:Folder 	= Modules.States
+local States 	= Modules.States
 local FirearmState 		= require(States.FirearmState)
 local ViewModelState 	= require(States.ViewModelState)
 local CharacterState 	= require(States.CharacterState)
 local InputState		= require(States.InputState)
 
-local Props:Folder		= Modules.Props
+local Props		= Modules.Props
 local FirearmProps 		= require(Props.FirearmProps)
 
-local Functions:Folder	= Modules.Functions
+local Functions	= Modules.Functions
 local RunCheck				= require(Functions.RunCheck)
 local GunFx					= require(Functions.GunFX)
 local CheckForHumanoid		= require(Functions.CheckForHumanoid)
@@ -34,7 +33,7 @@ local CalculateBulletSpread = require(Functions.CalculateBulletSpread)
 local CalculateTracer		= require(Functions.CalculateTracer)
 local ResetMods				= require(Functions.ResetMods)
 
-local Others:Folder 		= Modules.Others
+local Others 		= Modules.Others
 local ModTable 				= require(Others.ModTable)
 
 -- ==
@@ -791,36 +790,9 @@ end
 function WeaponAction:Unset(tool)
 	FirearmState.CurrentlyEquippingTool = false
 	Events.Equip:FireServer(FirearmProps.WeaponTool,2)
-	--unsetup weapon data module
-	CAS:UnbindAction("Fire")
-	CAS:UnbindAction("ADS")
-	CAS:UnbindAction("Reload")
-	CAS:UnbindAction("CycleLaser")
-	CAS:UnbindAction("CycleLight")
-	CAS:UnbindAction("CycleFiremode")
-	CAS:UnbindAction("CycleAimpart")
-	CAS:UnbindAction("ZeroUp")
-	CAS:UnbindAction("ZeroDown")
-	CAS:UnbindAction("CheckMag")
 
 	InputState.InputState.Mouse1down = false
 	FirearmState.Aiming = false
-
-	TS:Create(Camera,
-	TweenInfo.new(
-		0.2,
-		Enum.EasingStyle.Linear,
-		Enum.EasingDirection.InOut,
-		0,
-		false,
-		0
-	),
-	{FieldOfView = 70}):Play()
-
-	UIS.MouseIconEnabled = true
-	UIS.MouseDeltaSensitivity = 1
-	Camera.CameraType = Enum.CameraType.Custom
-	Player.CameraMode = Enum.CameraMode.Classic
 
 
 	if ViewModelState.WeaponInHand then
@@ -879,8 +851,6 @@ end
 function WeaponAction:Setup(tool)
 	if Character and Character:WaitForChild("Humanoid").Health > 0 and tool ~= nil then
 		FirearmState.CurrentlyEquippingTool = true
-		UIS.MouseIconEnabled 	= false
-		Player.CameraMode 			= Enum.CameraMode.LockFirstPerson
 
 		FirearmProps.WeaponTool 					= tool
 		FirearmProps.WeaponData 					= require(tool:WaitForChild("ACS_Settings"))
@@ -961,24 +931,7 @@ function WeaponAction:Setup(tool)
 		ModTable.Zoom2Value 	= FirearmProps.WeaponData.Zoom2
 		FirearmProps.HasIR		= FirearmProps.WeaponData.InfraRed
 
-		--[[
-			All CAS action should be moved to either handle action or init
-			or moved to an individual module to avoid cylic reference
-		]]
-		CAS:BindAction("Fire", 			HandleAction, true, 	Enum.UserInputType.MouseButton1, 	Enum.KeyCode.ButtonR2)
-		CAS:BindAction("ADS", 			HandleAction, true, 	Enum.UserInputType.MouseButton2, 	Enum.KeyCode.ButtonL2) 
-		CAS:BindAction("Reload", 		HandleAction, true, 	Enum.KeyCode.R, 					Enum.KeyCode.ButtonB )
-		CAS:BindAction("CycleAimpart", 	HandleAction, false, 	Enum.KeyCode.T											 )
 		
-		CAS:BindAction("CycleLaser", 	HandleAction, true, 	Enum.KeyCode.H											 )
-		CAS:BindAction("CycleLight", 	HandleAction, true, 	Enum.KeyCode.J											 )
-		
-		CAS:BindAction("CycleFiremode", HandleAction, false, 	Enum.KeyCode.V											 )
-		CAS:BindAction("CheckMag", 		HandleAction, false, 	Enum.KeyCode.M											 )
-
-		CAS:BindAction("ZeroDown", 		HandleAction, false, 	Enum.KeyCode.LeftBracket								 )
-		CAS:BindAction("ZeroUp", 		HandleAction, false, 	Enum.KeyCode.RightBracket								 )
-
 		--loadAttachment(WeaponInHand)
 
 		FirearmProps.BulletRecoilSpread	= 
@@ -1058,7 +1011,7 @@ function WeaponAction:Setup(tool)
 		end
 
 	end
-
+	return
 end
 
 return WeaponAction

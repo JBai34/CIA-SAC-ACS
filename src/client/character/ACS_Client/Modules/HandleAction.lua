@@ -40,22 +40,9 @@ local GunFx					= require(Others.GunFX)
 -- ==
 --=====
 local ACS_Workspace = workspace:FindFirstChild("ACS_WorkSpace")
-local Engine 		 = ReplicatedStorage:FindFirstChild("ACS_Engine")
-local Events 		= Engine:FindFirstChild("Events")
-local Mods 			= Engine:FindFirstChild("Modules")
-local HUDs 			= Engine:FindFirstChild("HUD")
-local Essential 	= Engine:FindFirstChild("Essential")
-local ArmModel 		= Engine:FindFirstChild("ArmModel")
-local GunModels 	= Engine:FindFirstChild("GunModels")
-local AttModels 	= Engine:FindFirstChild("AttModels")
-local AttModules  	= Engine:FindFirstChild("AttModules")
-local Rules			= Engine:FindFirstChild("GameRules")
-local PastaFx		= Engine:FindFirstChild("FX")
-local gameRules		         = require(Rules:WaitForChild("Config"))
-local SpringMod 	         = require(Mods:WaitForChild("Spring"))
-local HitMod 		         = require(Mods:WaitForChild("Hitmarker"))
-local Thread 		         = require(Mods:WaitForChild("Thread"))
-local Ultil			         = require(Mods:WaitForChild("Utilities"))
+local Engine 		 = ReplicatedStorage.ACS_Engine
+local Rules			= Engine.Rules
+local gameRules		= require(Rules.Config)
 --=========================================================
 
 local Camera = workspace.CurrentCamera

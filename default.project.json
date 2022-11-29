@@ -8,6 +8,10 @@
       "$ignoreUnknownInstances": true,
       "Common": {
         "$path": "src/shared"
+      },
+      "ACS_Engine": {
+        "$path": "src/ACS_Engine",
+        "$ignoreUnknownInstances": true
       }
     },
 
