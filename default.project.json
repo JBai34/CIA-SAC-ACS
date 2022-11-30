@@ -38,6 +38,12 @@
           "$ignoreUnknownInstances": true
         }
     },
+    
+    "StarterGui": {
+      "$className": "StarterGui",
+      "$path": "src/interface",
+      "$ignoreUnknownInstances": true
+    },
 
     "Workspace": {
       "$className": "Workspace",
