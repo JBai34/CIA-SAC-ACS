@@ -12,6 +12,9 @@
       "ACS_Engine": {
         "$path": "src/ACS_Engine",
         "$ignoreUnknownInstances": true
+      },
+      "Packages": {
+        "$path": "Packages"
       }
     },
 
