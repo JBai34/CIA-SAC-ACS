@@ -592,7 +592,7 @@ function WeaponAction:CreateBullet()
 		local BColor 		= Color3.fromRGB(255,255,255)
 		local bulletSpread
 
-		if FirearmState.Aimming and FirearmProps.WeaponData.Bullets <= 1 then
+		if FirearmState.Aiming and FirearmProps.WeaponData.Bullets <= 1 then
 			bulletSpread = CalculateBulletSpread()
 		else
 			bulletSpread = CalculateBulletSpread()

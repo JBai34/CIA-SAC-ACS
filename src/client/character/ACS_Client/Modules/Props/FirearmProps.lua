@@ -6,6 +6,7 @@ return {
     -- Ammo and Fire Mode Data
     Ammo = 0,
     StoredAmmo = 0,
+    IncludeChamberedBullet = false,
     
     CurAimpart = nil,
     

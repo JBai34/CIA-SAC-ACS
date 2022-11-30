@@ -4,6 +4,9 @@
         "1017",
         "1020",
         "1002",
+        1020,
+        1002,
+        1017
     ],
     "luau-lsp.diagnostics.workspace": false,
     "luau-lsp.diagnostics.includeDependents": false
