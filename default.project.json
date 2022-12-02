@@ -45,7 +45,11 @@
     "StarterGui": {
       "$className": "StarterGui",
       "$path": "src/interface",
-      "$ignoreUnknownInstances": true
+      "$ignoreUnknownInstances": true,
+      
+      "ACS_Interface": {
+        "$path": "src/interface/ACS_Interface"
+      }
     },
 
     "Workspace": {
