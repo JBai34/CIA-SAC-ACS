@@ -40,3 +40,7 @@ function Stance:render()
         }
     )
 end
+
+--[[
+    We are goign to have to bind all of the states into attributes or implement a method that compares the tables
+]]
