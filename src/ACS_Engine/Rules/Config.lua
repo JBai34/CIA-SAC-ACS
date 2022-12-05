@@ -1,5 +1,5 @@
 
-return {
+local Config: {} = {
 ----------------------------------------------------------------------------------------------------
 -----------------=[ General ]=----------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ return {
 ----------------------------------------------------------------------------------------------------
 ------------------=[ Core GUI ]=--------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-	,CoreGuiHealth = false				--- Enable Health Bar?
+	,CoreGuiHealth = true				--- Enable Health Bar?
 	,CoreGuiPlayerList = true			--- Enable Player List?
 	,TopBarTransparency = 1
 ----------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ return {
 	,PainMult = 1.5						--- 
 	,BloodMult = 1.75					--- 
 
-	,EnableFallDamage = true			--- Enable Fall Damage?
+	,EnableFallDamage = false			--- Enable Fall Damage?
 	,MaxVelocity = 75					--- Velocity that will trigger the damage
 	,DamageMult = 1 					--- The min time a player has to fall in order to take fall damage.
 ----------------------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ return {
 ----------------------------------------------------------------------------------------------------
 	,VehicleMaxZoom = 150
 	
-	,AgeRestrictEnabled = true
+	,AgeRestrictEnabled = false
 	,AgeLimit = 60
 	
 	,WaterMark = true
@@ -85,3 +85,5 @@ return {
 	
 	,Version = "ACS 2.0 - R15"
 }
+
+return Config

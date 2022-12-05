@@ -7,9 +7,21 @@ local e = Roact.createElement
 return Rodux.Store.new(
     Rodux.combineReducers({
         
-        page = Rodux.createReducer(nil, {
-            UpdatePage = function(_, action)
-                return action.newPage
+        characterStanceReducer = Rodux.createReducer(nil, {
+            UpdateStance = function(_, action)
+                return action.newStance
+            end
+        });
+        
+        ammoCountReducer = Rodux.createReducer(nil, {
+            UpdateAmmo = function(_, action)
+                return action.newAmmoCount
+            end
+        });
+        
+        magazineCountReducer = Rodux.createReducer(nil, {
+            UpdateMagazine = function(_, action)
+                return action.newMagazineCount
             end
         });
         
