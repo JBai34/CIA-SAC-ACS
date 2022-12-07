@@ -5,16 +5,16 @@ local RoactRodux = require(game:GetService('ReplicatedStorage').Packages.RoactRo
 local e = Roact.createElement
 
 --===========
-local Stance = Roact.PureComponent:extend("Stance")
+local CharacterStateFrame = Roact.PureComponent:extend("Stance")
 
-local StanceImage = require(script.Parent.Parent.Assets.Images.stances)
+local Image = script.Parent.Parent.Assets.Images.CharacterState
 
 --===========
-function Stance:init()
+function CharacterStateFrame:init()
 
 end
 
-function Stance:render()
+function CharacterStateFrame:render()
     return e(
         "Frame", 
         {
@@ -26,21 +26,17 @@ function Stance:render()
             BorderSizePixel = 0;
             ClipsDescendants = true;
             Size = UDim2.fromScale(0.059,0.104);
-            Position = UDim2.fromScale(0.95, 0.9);
+            Position = UDim2.fromScale(0.08, 0.87);
         },
         {
-            stanceImage = e(
-                "ImageLabel",
-                {
-                    Image = StanceImage[1];
-                    Position = UDim2.fromScale(0.5, 0.5);
-                    Size = UDim2.fromScale(1, 0);
-                }
-            )
+            stamina = require(Image.Stamina)();
+            
+            leanLeft = require(Image.Stances.leanLeft)();
+            leanRight = require(Image.Stances.leanRight)();
+            
+            standingStance = require(Image.Stances.standingStance)();
+            crouchingStance = require(Image.Stances.crouchingStance)();
+            proneStance = require(Image.Stances.proneStance)();
         }
     )
 end
-
---[[
-    We are goign to have to bind all of the states into attributes or implement a method that compares the tables
-]]

@@ -10,11 +10,11 @@ local objs = {
 		}
 
 function PlayAnimation:EquipAnim()
-	AnimDebounce = false
+	ViewModelState.AnimDebounce = false
 	pcall(function()
 		ViewModelState.AnimData.EquipAnim(objs)
 	end)
-	AnimDebounce = true
+	ViewModelState.AnimDebounce = true
 end
 
 
@@ -22,11 +22,11 @@ function PlayAnimation:IdleAnim()
 	pcall(function()
 		ViewModelState.AnimData.IdleAnim(objs)
 	end)
-	AnimDebounce = true
+	ViewModelState.AnimDebounce = true
 end
 
 function PlayAnimation:SprintAnim()
-	AnimDebounce = false
+	ViewModelState.AnimDebounce = false
 	pcall(function()
 		ViewModelState.AnimData.SprintAnim(objs)
 	end)
