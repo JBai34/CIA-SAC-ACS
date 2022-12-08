@@ -7,10 +7,9 @@ local e = Roact.createElement
 return e(
     "ScreenGui",
     {
-        IgnoreGuiInset = true,
-        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-        ResetOnSpawn = false,
+        IgnoreGuiInset = true;
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+        ResetOnSpawn = false;
     }, {
         
-    }
-)
+    })

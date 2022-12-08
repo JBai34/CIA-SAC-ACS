@@ -26,7 +26,6 @@ local FirearmProps 		= require(Props.FirearmProps)
 
 local Functions	= Modules.Functions
 local RunCheck				= require(Functions.RunCheck)
-local GunFx					= require(Functions.GunFX)
 local CheckForHumanoid		= require(Functions.CheckForHumanoid)
 local Recoil				= require(Functions.Recoil)
 local CalculateBulletSpread = require(Functions.CalculateBulletSpread)
@@ -35,6 +34,7 @@ local ResetMods				= require(Functions.ResetMods)
 
 local Others 		= Modules.Others
 local ModTable 				= require(Others.ModTable)
+local GunFx					= require(Others.GunFX)
 
 -- ==
 --=====
