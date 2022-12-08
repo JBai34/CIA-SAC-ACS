@@ -10,7 +10,7 @@
         "$path": "src/shared"
       },
       "ACS_Engine": {
-        "$path": "src/ACS_Engine",
+        "$path": "src/shared/ACS_Engine",
         "$ignoreUnknownInstances": true
       },
       "Packages": {
