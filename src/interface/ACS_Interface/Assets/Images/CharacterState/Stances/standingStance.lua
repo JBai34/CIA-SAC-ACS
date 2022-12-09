@@ -13,8 +13,8 @@ return function(props)
             BackgroundColor3 = Color3.fromRGB(255,255,255),
             BackgroundTransparency =  1,
             BorderSizePixel = 0,
-            Position = if props.Position then props.Position else UDim2.fromScale(0.5, 0.5),
-            Size = if props.Size then props.Size else UDim2.fromScale(.7,.7),
+            Position = if props ~= nil and props.Position ~= nil then props.Position else UDim2.fromScale(0.5, 0.5),
+            Size = if props ~= nil and props.Size ~= nil then props.Size else UDim2.fromScale(.7,.7),
             ZIndex =  2,
         }
     )

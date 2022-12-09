@@ -4,8 +4,7 @@ local Rodux = require(game:GetService('ReplicatedStorage').Packages.Rodux)
 local RoactRodux = require(game:GetService('ReplicatedStorage').Packages.RoactRodux)
 local e = Roact.createElement
 
-return Rodux.Store.new(
-    Rodux.combineReducers({
+return Rodux.Store.new(Rodux.combineReducers({
         
         characterStanceReducer = Rodux.createReducer(nil, {
             UpdateStance = function(_, action)

@@ -48,13 +48,13 @@ local ArmModel 		= Engine:FindFirstChild("ArmModel")
 local GunModels 	= Engine:FindFirstChild("GunModels")
 local AttModels 	= Engine:FindFirstChild("AttModels")
 local AttModules  	= Engine:FindFirstChild("AttModules")
-local Rules			= Engine:FindFirstChild("GameRules")
+local Rules			= Engine.Rules
 local PastaFx		= Engine:FindFirstChild("FX")
-local gameRules		         = require(Rules:WaitForChild("Config"))
-local SpringMod 	         = require(Mods:WaitForChild("Spring"))
-local HitMod 		         = require(Mods:WaitForChild("Hitmarker"))
-local Thread 		         = require(Mods:WaitForChild("Thread"))
-local Ultil			         = require(Mods:WaitForChild("Utilities"))
+local gameRules		         = require(Rules.Config)
+local SpringMod 	         = require(Mods.Spring)
+local HitMod 		         = require(Mods.Hitmarker)
+local Thread 		         = require(Mods.Thread)
+local Ultil			         = require(Mods.Utilities)
 --=========================================================
 local WeaponAction = {}
 
@@ -62,7 +62,7 @@ local Camera = workspace.CurrentCamera
 local IgnoreModel = {Camera,Character,ACS_Workspace.Client,ACS_Workspace.Server}
 --==
 local function JamChance()
-	if FirearmProps.WeaponData.CanBreak == true and not FirearmState.Jammed and Ammo - 1 > 0 then
+	if FirearmProps.WeaponData.CanBreak == true and not FirearmState.Jammed and FirearmProps.Ammo - 1 > 0 then
 		local Jam = math.random(1000)
 		if Jam <= 2 then
 			FirearmState.Jammed = true
@@ -136,7 +136,7 @@ function WeaponAction:SetLaser()
 		end
 	end
 	ViewModelState.WeaponInHand.Handle.Click:play()
-	UpdateGui()
+	
 end
 --==
 function WeaponAction:Jammed()
@@ -147,11 +147,11 @@ function WeaponAction:Jammed()
 		FirearmState.SafeMode = false
 		FirearmState.GunStance = 0
 		Events.GunStance:FireServer(FirearmState.GunStance,ViewModelState.AnimData)
-		UpdateGui()
+		
 
 		PlayAnimation:JammedAnim()
 		FirearmState.Jammed = false
-		UpdateGui()
+		
 		FirearmState.Reloading = false
 		RunCheck()
 	end
@@ -179,7 +179,7 @@ function WeaponAction:Firemode()
 		FirearmProps.WeaponData.ShootType = 2
 		---Explosive Settings---
 	end
-	UpdateGui()
+	
 
 end
 
@@ -191,7 +191,7 @@ function WeaponAction:Reload()
 		FirearmState.SafeMode = false
 		FirearmState.GunStance = 0
 		Events.GunStance:FireServer(FirearmState.GunStance,ViewModelState.AnimData)
-		UpdateGui()
+		
 
 		if FirearmProps.WeaponData.ShellInsert then -- shell insert scenario
 			if FirearmProps.Ammo > 0 then
@@ -203,7 +203,7 @@ function WeaponAction:Reload()
 						PlayAnimation:ReloadAnim()
 						FirearmProps.Ammo = FirearmProps.Ammo + 1
 						FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
-						UpdateGui()
+						
 					end
 				end
 				
@@ -211,7 +211,7 @@ function WeaponAction:Reload()
 				PlayAnimation:TacticalReloadAnim()
 				FirearmProps.Ammo = FirearmProps.Ammo + 1
 				FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
-				UpdateGui()
+				
 				for _ = 1,FirearmProps.Ammo - Ammo do
 					if FirearmProps.StoredAmmo > 0 and Ammo < FirearmProps.Ammo then
 						if FirearmState.CancelReload then
@@ -220,7 +220,7 @@ function WeaponAction:Reload()
 						PlayAnimation:ReloadAnim()
 						FirearmProps.Ammo = FirearmProps.Ammo + 1
 						FirearmProps.StoredAmmo = FirearmProps.StoredAmmo - 1
-						UpdateGui()
+						
 					end
 				end
 
@@ -253,7 +253,7 @@ function WeaponAction:Reload()
 		FirearmState.CancelReload = false
 		FirearmState.Reloading = false
 		RunCheck()
-		UpdateGui()
+		
 	end
 end
 
@@ -430,7 +430,7 @@ function WeaponAction:CastRay(_bullet, _origin)
 						TotalDistTraveled = (raycastResult.Position - _origin).Magnitude
 
 						if foundHumanoid == true and humanoid.Health > 0 and FirearmProps.WeaponData then
-							local SKP_02 = SKP_01.."-"..Player.UserId
+							local SKP_02 = Player.UserId
 
 							if HitPart.Name == "Head" or HitPart.Parent.Name == "Top" or HitPart.Parent.Name == "Headset" or HitPart.Parent.Name == "Olho" or HitPart.Parent.Name == "Face" or HitPart.Parent.Name == "Numero" then
 								Events.Damage:InvokeServer(FirearmProps.WeaponTool, humanoid, TotalDistTraveled, 1, FirearmProps.WeaponData, ModTable, nil, nil, SKP_02)
@@ -447,128 +447,6 @@ function WeaponAction:CastRay(_bullet, _origin)
 				Bpos2 = Bpos
 			else
 				break
-			end
-		end
-	end
-end
-
-function WeaponAction:UpdateGui()
-	if SE_GUI then
-		local HUD = SE_GUI.GunHUD
-
-		if FirearmProps.WeaponData ~= nil then
-
-			--[[if Settings.ArcadeMode == true then
-				HUD.Ammo.Visible = true
-				HUD.Ammo.AText.Text = Ammo.Value.."|"..Settings.Ammo
-			else
-				HUD.Ammo.Visible = false
-			end]]
-
-			--[[if Settings.FireModes.Explosive == true and GLChambered.Value == true then
-				HUD.E.ImageColor3 = Color3.fromRGB(255,255,255)
-				HUD.E.Visible = true
-			elseif Settings.FireModes.Explosive == true and GLChambered.Value == false then
-				HUD.E.ImageColor3 = Color3.fromRGB(255,0,0)
-				HUD.E.Visible = true
-			elseif Settings.FireModes.Explosive == false then
-				HUD.E.Visible = false
-			end]]
-
-			if FirearmState.Jammed then
-				HUD.B.BackgroundColor3 = Color3.fromRGB(255,0,0)
-			else
-				HUD.B.BackgroundColor3 = Color3.fromRGB(255,255,255)
-			end
-
-			if FirearmState.SafeMode then
-				HUD.A.Visible = true
-			else
-				HUD.A.Visible = false
-			end
-
-			if FirearmProps.Ammo > 0 then
-				HUD.B.Visible = true
-			else
-				HUD.B.Visible = false
-			end
-
-			if FirearmProps.WeaponData.ShootType == 1 then
-				HUD.FText.Text = "Semi"
-			elseif FirearmProps.WeaponData.ShootType == 2 then
-				HUD.FText.Text = "Burst"
-			elseif FirearmProps.WeaponData.ShootType == 3 then
-				HUD.FText.Text = "Auto"
-			elseif FirearmProps.WeaponData.ShootType == 4 then
-				HUD.FText.Text = "Pump-Action"
-			elseif FirearmProps.WeaponData.ShootType == 5 then
-				HUD.FText.Text = "Bolt-Action"
-			end
-
-			HUD.Sens.Text = (InputState.MouseSensitivity/100)
-			HUD.BText.Text = FirearmProps.WeaponData.BulletType
-			HUD.NText.Text = FirearmProps.WeaponData.gunName
-
-			if FirearmProps.WeaponData.EnableZeroing then
-				HUD.ZeText.Visible = true
-				HUD.ZeText.Text = FirearmProps.WeaponData.CurrentZero .." m"
-			else
-				HUD.ZeText.Visible = false
-			end
-
-			if FirearmProps.WeaponData.MagCount then
-				HUD.SAText.Text = math.ceil(FirearmProps.StoredAmmo/FirearmProps.WeaponData.Ammo)
-				HUD.Magazines.Visible = true
-				HUD.Bullets.Visible = false
-			else
-				HUD.SAText.Text = FirearmProps.StoredAmmo
-				HUD.Magazines.Visible = false
-				HUD.Bullets.Visible = true
-			end
-
-			if FirearmProps.Suppressor then
-				HUD.Att.Silencer.Visible = true
-			else
-				HUD.Att.Silencer.Visible = false
-			end
-
-
-			if FirearmProps.HasLaser then
-				HUD.Att.Laser.Visible = true
-				if FirearmState.LaserActive then
-					if FirearmProps.HasIR and FirearmState.IRLaserActive == false then -- Enable IR
-						TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(0,255,0), ImageTransparency = .123}):Play()
-					elseif not (FirearmProps.HasIR and FirearmState.IRLaserActive) then -- No IR/Disable IR
-						TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,255,255), ImageTransparency = .123}):Play()
-					end
-				else -- Laser deactivated
-					TS:Create(HUD.Att.Laser, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,0,0), ImageTransparency = .5}):Play()
-				end
-			else -- No laser on firearm
-				HUD.Att.Laser.Visible = false
-			end
-
-			if FirearmProps.HasBipod then
-				HUD.Att.Bipod.Visible = true
-			else
-				HUD.Att.Bipod.Visible = false
-			end
-
-			if FirearmProps.HasFlashLight then
-				HUD.Att.Flash.Visible = true
-				if FirearmState.FlashLightActive then
-					TS:Create(HUD.Att.Flash, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,255,255), ImageTransparency = .123}):Play()
-				else
-					TS:Create(HUD.Att.Flash, TweenInfo.new(.1,Enum.EasingStyle.Linear), {ImageColor3 = Color3.fromRGB(255,0,0), ImageTransparency = .5}):Play()
-				end
-			else
-				HUD.Att.Flash.Visible = false
-			end
-
-			if FirearmProps.WeaponData.Type == "Grenade" then
-				SE_GUI.GrenadeForce.Visible = true
-			else
-				SE_GUI.GrenadeForce.Visible = false
 			end
 		end
 	end
@@ -698,7 +576,7 @@ function WeaponAction:Shoot()
 			return
 		end
 
-		if Ammo <= 0 or FirearmState.Jammed then
+		if FirearmProps.Ammo <= 0 or FirearmState.Jammed then
 			ViewModelState.WeaponInHand.Handle.Click:Play()
 			InputState.Mouse1down = false
 			return
@@ -713,17 +591,17 @@ function WeaponAction:Shoot()
 				for _ =  1, FirearmProps.WeaponData.Bullets do
 					task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 				end
-				Ammo = Ammo - 1
+				FirearmProps.Ammo = FirearmProps.Ammo - 1
 				GunFx(FirearmProps, FirearmState, ViewModelState)
 				JamChance()
-				self:UpdateGui()
+				
 				task.spawn(Recoil(FirearmProps.WeaponData))
 				task.wait(60/FirearmProps.WeaponData.ShootRate)
 				FirearmState.Shooting = false
 
 			elseif FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 2 then
 				for i = 1, FirearmProps.WeaponData.BurstShot do
-					if FirearmState.Shooting or Ammo <= 0 or InputState.Mouse1down == false or FirearmState.Jammed then
+					if FirearmState.Shooting or FirearmProps.Ammo <= 0 or InputState.Mouse1down == false or FirearmState.Jammed then
 						break
 					end
 					FirearmState.Shooting = true	
@@ -731,10 +609,10 @@ function WeaponAction:Shoot()
 					for _ =  1, FirearmProps.WeaponData.Bullets do
 						task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 					end
-					Ammo = Ammo - 1
+					FirearmProps.Ammo = FirearmProps.Ammo - 1
 					GunFx(FirearmProps, FirearmState, ViewModelState)
 					JamChance()
-					self:UpdateGui()
+					
 					task.spawn(Recoil(FirearmProps.WeaponData))
 					task.wait(60/FirearmProps.WeaponData.ShootRate)
 					FirearmState.Shooting = false
@@ -742,7 +620,7 @@ function WeaponAction:Shoot()
 				end
 			elseif FirearmProps.WeaponData and FirearmProps.WeaponData.ShootType == 3 then
 				while InputState.Mouse1down do
-					if FirearmState.Shooting or Ammo <= 0 or FirearmState.Jammed then
+					if FirearmState.Shooting or FirearmProps.Ammo <= 0 or FirearmState.Jammed then
 						break
 					end
 					FirearmState.Shooting = true	
@@ -750,10 +628,10 @@ function WeaponAction:Shoot()
 					for _ =  1, FirearmProps.WeaponData.Bullets do
 						task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 					end
-					Ammo = Ammo - 1
+					FirearmProps.Ammo = FirearmProps.Ammo - 1
 					GunFx(FirearmProps, FirearmState, ViewModelState)
 					JamChance()
-					self:UpdateGui()
+					
 					task.spawn(Recoil(FirearmProps.WeaponData))
 					task.wait(60/FirearmProps.WeaponData.ShootRate)
 					FirearmState.Shooting = false
@@ -765,9 +643,9 @@ function WeaponAction:Shoot()
 				for _ =  1, FirearmProps.WeaponData.Bullets do
 					task.spawn(self:CreateBullet(FirearmProps.WeaponData))
 				end
-				Ammo = Ammo - 1
+				FirearmProps.Ammo = FirearmProps.Ammo - 1
 				GunFx(FirearmProps, FirearmState, ViewModelState)
-				self:UpdateGui()
+				
 				task.spawn(Recoil(FirearmProps.WeaponData))
 				PlayAnimation:PumpAnim()
 				RunCheck()
@@ -791,7 +669,7 @@ function WeaponAction:Unset(tool)
 	FirearmState.CurrentlyEquippingTool = false
 	Events.Equip:FireServer(FirearmProps.WeaponTool,2)
 
-	InputState.InputState.Mouse1down = false
+	InputState.Mouse1down = false
 	FirearmState.Aiming = false
 
 
@@ -839,8 +717,6 @@ function WeaponAction:Unset(tool)
 		FirearmState.AimPartMode 	= 1
 		FirearmState.GenerateBullet = 1
 
-		SE_GUI.GunHUD.Visible = false
-		SE_GUI.GrenadeForce.Visible = false
 		ViewModelState.BipodCFrame = CFrame.new()
 		if gameRules.ReplicatedLaser then
 			Events.SVLaser:FireServer(nil,2,nil,false,FirearmProps.WeaponTool)
@@ -953,11 +829,6 @@ function WeaponAction:Setup(tool)
 		end
 		
 
-		if FirearmProps.WeaponData.EnableHUD then
-			SE_GUI.GunHUD.Visible = true
-		end
-		self:UpdateGui()
-
 		for _, key in pairs(ViewModelState.WeaponInHand:GetChildren()) do
 			if key:IsA('BasePart') and key.Name ~= 'Handle' then
 
@@ -1002,7 +873,7 @@ function WeaponAction:Setup(tool)
 		--WeaponInHand:SetPrimaryPartCFrame( RArm.CFrame * guncf)
 
 		ViewModelState.WeaponInHand.Parent = ViewModelState.ViewModel	
-		if Ammo <= 0 and FirearmProps.WeaponData.Type == "Gun" then
+		if FirearmProps.Ammo <= 0 and FirearmProps.WeaponData.Type == "Gun" then
 			ViewModelState.Handle.Slide.C0 = FirearmProps.WeaponData.SlideEx:Inverse()
 		end
 		PlayAnimation:EquipAnim()
