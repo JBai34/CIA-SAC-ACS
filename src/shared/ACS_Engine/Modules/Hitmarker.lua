@@ -1,4 +1,4 @@
-local SE_Workspace 		= workspace:WaitForChild("ACS_WorkSpace")
+local SE_Workspace 		= workspace:FindFirstChild("ACS_WorkSpace")
 local Debris 			= game:GetService("Debris")
 local TS 				= game:GetService('TweenService')
 

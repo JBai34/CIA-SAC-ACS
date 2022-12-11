@@ -97,7 +97,6 @@ return function(actionName, inputState, inputObject)
 		if WeaponData.CurrentZero < WeaponData.MaxZero then
 			WeaponInHand.Handle.Click:play()
 			WeaponData.CurrentZero = math.min(WeaponData.CurrentZero + WeaponData.ZeroIncrement, WeaponData.MaxZero) 
-			UpdateGui()
 		end
 	end
 
@@ -105,7 +104,6 @@ return function(actionName, inputState, inputObject)
 		if WeaponData.CurrentZero > 0 then
 			WeaponInHand.Handle.Click:play()
 			WeaponData.CurrentZero = math.max(WeaponData.CurrentZero - WeaponData.ZeroIncrement, 0) 
-			UpdateGui()
 		end
 	end
 
@@ -115,8 +113,7 @@ return function(actionName, inputState, inputObject)
 
 	if actionName == "ToggleBipod" and inputState == Enum.UserInputState.Begin and CanBipod then
 
-		BipodActive = not BipodActive
-		UpdateGui()
+		BipodActive = not BipodActiv
 	end
 
 	if actionName == "NVG" and inputState == Enum.UserInputState.Begin and not NVGdebounce then

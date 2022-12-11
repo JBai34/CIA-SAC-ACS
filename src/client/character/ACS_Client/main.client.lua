@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local CAS = game:GetService("ContextActionService")
 --=====
 local Modules = script.Parent.Modules
 local States = Modules.States
@@ -6,6 +7,7 @@ local FirearmState = require(States.FirearmState)
 
 local Actions = Modules.Actions
 local EquipAction = require(Actions.EquipAction)
+local HandleAction = require(Modules.HandleAction)
 
 local Props = Modules.Props
 local FirearmProps = require(Props.FirearmProps)
@@ -51,3 +53,13 @@ Character.ChildRemoved:Connect(function(tool)
 		end
 	end
 end)
+print("Run")
+CAS:BindAction("Run", HandleAction, false, Enum.KeyCode.LeftShift)
+
+CAS:BindAction("Stand", HandleAction, false, Enum.KeyCode.X)
+CAS:BindAction("Crouch", HandleAction, false, Enum.KeyCode.C)
+CAS:BindAction("NVG", HandleAction, false, Enum.KeyCode.N)
+
+CAS:BindAction("ToggleWalk", HandleAction, false, Enum.KeyCode.Z)
+CAS:BindAction("LeanLeft", HandleAction, false, Enum.KeyCode.Q)
+CAS:BindAction("LeanRight", HandleAction, false, Enum.KeyCode.E)

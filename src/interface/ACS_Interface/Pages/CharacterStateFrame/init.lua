@@ -69,4 +69,8 @@ function CharacterStateFrame:render(_, state)
     })
 end
 
+function CharacterStateFrame:didMount()
+    
+end
+
 return CharacterStateFrame
