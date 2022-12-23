@@ -11,3 +11,5 @@ wally.lock
 # sourcemap
 /sourcemap.json
 
+# old client init
+/src/client/character/ACS_Client/oldinit.client.lua
