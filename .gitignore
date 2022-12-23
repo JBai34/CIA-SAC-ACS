@@ -5,5 +5,9 @@
 /*.rbxlx.lock
 /*.rbxl.lock
 
+# wally lock file
+wally.lock
+
 # sourcemap
-sourcemap.json
+/sourcemap.json
+

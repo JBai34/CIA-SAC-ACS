@@ -107,13 +107,13 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "CheckMag" and inputState == Enum.UserInputState.Begin and not CheckingMag and not reloading and not runKeyDown and ViewModelState.AnimDebounce then
+	if actionName == "CheckMag" and inputState == Enum.UserInputState.Begin and not CheckingMag and not reloading and not InputState.runKeyDown and ViewModelState.AnimDebounce then
 		CheckMagFunction()
 	end
 
 	if actionName == "ToggleBipod" and inputState == Enum.UserInputState.Begin and CanBipod then
 
-		BipodActive = not BipodActiv
+		BipodActive = not BipodActive
 	end
 
 	if actionName == "NVG" and inputState == Enum.UserInputState.Begin and not NVGdebounce then
@@ -135,7 +135,7 @@ return function(actionName, inputState, inputObject)
 	end
 
 	if actionName == "ADS" and inputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce then
-		if WeaponData and WeaponData.canAim and GunStance > -2 and not runKeyDown and not CheckingMag then
+		if WeaponData and WeaponData.canAim and GunStance > -2 and not InputState.runKeyDown and not CheckingMag then
 			aimming = not aimming
 			ADS(aimming)
 		end
@@ -145,24 +145,21 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "Stand" and inputState == Enum.UserInputState.Begin and ChangeStance and not Swimming and not Sentado and not runKeyDown then
-		if Stances == 2 then
-			Crouched = true
-			Proned = false
-			Stances = 1
+	if actionName == "Stand" and inputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
+		if CharacterState.stances == 0 then
+			CharacterState.stances = 1
 			CameraY = -1
 			Crouch()
 
 
-		elseif Stances == 1 then		
-			Crouched = false
-			Stances = 0
+		elseif CharacterState.stances == 1 then		
+			CharacterState.stances = 0
 			CameraY = 0
 			Stand()
 		end	
 	end
 
-	if actionName == "Crouch" and inputState == Enum.UserInputState.Begin and ChangeStance and not Swimming and not Sentado and not runKeyDown then
+	if actionName == "Crouch" and inputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
 		if Stances == 0 then
 			Stances = 1
 			CameraY = -1
@@ -180,7 +177,7 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "ToggleWalk" and inputState == Enum.UserInputState.Begin and ChangeStance and not runKeyDown then
+	if actionName == "ToggleWalk" and inputState == Enum.UserInputState.Begin and not InputState.runKeyDown then
 		Steady = not Steady
 
 		if Steady then
@@ -194,7 +191,7 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "LeanLeft" and inputState == Enum.UserInputState.Begin and Stances ~= 2 and ChangeStance and not Swimming and not runKeyDown and CanLean then
+	if actionName == "LeanLeft" and inputState == Enum.UserInputState.Begin and Stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
 		if Virar == 0 or Virar == 1 then
 			Virar = -1
 			CameraX = -1.25
@@ -205,7 +202,7 @@ return function(actionName, inputState, inputObject)
 		Lean()
 	end
 
-	if actionName == "LeanRight" and inputState == Enum.UserInputState.Begin and Stances ~= 2 and ChangeStance and not Swimming and not runKeyDown and CanLean then
+	if actionName == "LeanRight" and inputState == Enum.UserInputState.Begin and Stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
 		if Virar == 0 or Virar == -1 then
 			Virar = 1
 			CameraX = 1.25
@@ -217,7 +214,7 @@ return function(actionName, inputState, inputObject)
 	end
 
 	if actionName == "Run" and inputState == Enum.UserInputState.Begin and running and not script.Parent:GetAttribute("Injured") then
-		runKeyDown 	= true
+		InputState.runKeyDown 	= true
 		Stand()
 		Stances = 0
 		Virar = 0
@@ -238,8 +235,8 @@ return function(actionName, inputState, inputObject)
 			SprintAnim()
 		end
 
-	elseif actionName == "Run" and inputState == Enum.UserInputState.End and runKeyDown then
-		runKeyDown 	= false
+	elseif actionName == "Run" and inputState == Enum.UserInputState.End and InputState.runKeyDown then
+		InputState.runKeyDown 	= false
 		Stand()
 		if not CheckingMag and not reloading and WeaponData and WeaponData.Type ~= "Grenade" and (GunStance == 0 or GunStance == 2 or GunStance == 3) then
 			GunStance = 0

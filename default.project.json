@@ -10,7 +10,7 @@
         "$path": "src/shared"
       },
       "ACS_Engine": {
-        "$path": "src/shared/ACS_Engine",
+        "$path": "src/ACS_Engine",
         "$ignoreUnknownInstances": true
       },
       "Packages": {
@@ -44,12 +44,7 @@
     
     "StarterGui": {
       "$className": "StarterGui",
-      "$path": "src/interface",
-      "$ignoreUnknownInstances": true,
-      
-      "ACS_Interface": {
-        "$path": "src/interface/ACS_Interface"
-      }
+      "$path": "src/interface"
     },
 
     "Workspace": {
