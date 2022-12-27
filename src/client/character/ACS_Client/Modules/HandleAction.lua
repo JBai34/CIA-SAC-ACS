@@ -1,3 +1,11 @@
+--[[
+	This is the main action handler for the client. It handles all the input from the player and calls the appropriate weapon/character functions.
+	
+	This handler should act as a SETTER for the states of the weapon and character. All other corresponding modules should act as GETTERS for them,
+	with the exception of CharacterState.cameraX and CharacterState.cameraY, which are used to set the camera offset.
+	
+	Jason
+]]
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage= game:GetService("ReplicatedStorage")
@@ -15,6 +23,7 @@ local Modules		  	= ACSClient.Modules
 local Actions			= Modules.Actions
 local PlayAnimation		= require(Actions.PlayAnimation)
 local WeaponAction		= require(Actions.WeaponAction)
+local CharacterAction		 = require(Actions.CharacterAction)
 
 local States		 	= Modules.States
 local FirearmState 		= require(States.FirearmState)
@@ -145,84 +154,64 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
+	--// STANCES \\--
 	if actionName == "Stand" and inputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
 		if CharacterState.stances == 0 then
 			CharacterState.stances = 1
-			CameraY = -1
-			Crouch()
-
-
+			CharacterAction:Crouch()
+			
 		elseif CharacterState.stances == 1 then		
 			CharacterState.stances = 0
-			CameraY = 0
-			Stand()
+			CharacterAction:Stand()
 		end	
-	end
-
-	if actionName == "Crouch" and inputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
-		if Stances == 0 then
-			Stances = 1
-			CameraY = -1
-			Crouch()
-			Crouched = true
-		elseif Stances == 1 then	
-			Stances = 2
-			CameraX = 0
-			CameraY = -3.25
-			Virar = 0
-			Lean()
-			Prone()
-			Crouched = false
-			Proned = true
+		
+	elseif actionName == "Crouch" and inputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
+		if CharacterState.stances == 0 then
+			CharacterState.stances = 1
+			CharacterAction:Crouch()
+			
+		elseif CharacterState.stances == 1 then	
+			CharacterState.stances = 2
+			CharacterState.leaning = 0
+			CharacterAction:Lean(0)
+			CharacterAction:Prone()
 		end
-	end
-
-	if actionName == "ToggleWalk" and inputState == Enum.UserInputState.Begin and not InputState.runKeyDown then
-		Steady = not Steady
-
-		if Steady then
-			SE_GUI.MainFrame.Poses.Steady.Visible = true
+		
+	elseif actionName == "ToggleWalk" and inputState == Enum.UserInputState.Begin and not InputState.runKeyDown then
+		CharacterState.steadyWalking = not CharacterState.steadyWalking
+		
+		if CharacterState.stances == 0 then
+			CharacterAction:Stand()
+		end
+		
+	elseif actionName == "LeanLeft" and inputState == Enum.UserInputState.Begin and CharacterState.stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
+		if CharacterState.leaning == -1 then
+			CharacterState.leaning = 0
 		else
-			SE_GUI.MainFrame.Poses.Steady.Visible = false
+			CharacterState.leaning = -1		
 		end
-
-		if Stances == 0 then
-			Stand()
-		end
-	end
-
-	if actionName == "LeanLeft" and inputState == Enum.UserInputState.Begin and Stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
-		if Virar == 0 or Virar == 1 then
-			Virar = -1
-			CameraX = -1.25
+		CharacterAction:Lean(CharacterState.leaning)
+		
+	elseif actionName == "LeanRight" and inputState == Enum.UserInputState.Begin and CharacterState.stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
+		if CharacterState.leaning == 1 then
+			CharacterState.leaning = 0
 		else
-			Virar = 0
-			CameraX = 0
+			CharacterState.leaning = 1
 		end
-		Lean()
+		CharacterAction:Lean(CharacterState.leaning)
 	end
-
-	if actionName == "LeanRight" and inputState == Enum.UserInputState.Begin and Stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
-		if Virar == 0 or Virar == -1 then
-			Virar = 1
-			CameraX = 1.25
-		else
-			Virar = 0
-			CameraX = 0
-		end
-		Lean()
-	end
-
-	if actionName == "Run" and inputState == Enum.UserInputState.Begin and running and not script.Parent:GetAttribute("Injured") then
+	--// STANCES \\--
+	
+	if actionName == "Run" and inputState == Enum.UserInputState.Begin and not CharacterState.running and not CharacterState.injured then
 		InputState.runKeyDown 	= true
-		Stand()
-		Stances = 0
-		Virar = 0
+		CharacterAction:Stand()
+		CharacterState.stances = 0
+		CharacterState.leaning = 0
 		CameraX = 0
 		CameraY = 0
-		Lean()
+		CharacterAction:Lean(CharacterState.leaning)
 
-		char:WaitForChild("Humanoid").WalkSpeed = gameRules.RunWalkSpeed
+		Character.Humanoid.WalkSpeed = gameRules.RunWalkSpeed
 
 		if aimming then
 			aimming = false
@@ -234,14 +223,14 @@ return function(actionName, inputState, inputObject)
 			Evt.GunStance:FireServer(GunStance,AnimData)
 			SprintAnim()
 		end
-
 	elseif actionName == "Run" and inputState == Enum.UserInputState.End and InputState.runKeyDown then
 		InputState.runKeyDown 	= false
-		Stand()
+		CharacterAction:Stand()
 		if not CheckingMag and not reloading and WeaponData and WeaponData.Type ~= "Grenade" and (GunStance == 0 or GunStance == 2 or GunStance == 3) then
 			GunStance = 0
 			Evt.GunStance:FireServer(GunStance,AnimData)
 			IdleAnim()
 		end
 	end
+	
 end

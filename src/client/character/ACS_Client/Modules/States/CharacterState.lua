@@ -4,6 +4,7 @@ return {
     jumping 	= false,
     swimming    = false,
     sitting     = false,
+    steadyWalking = false,
     
     canLean     = true,
     
@@ -11,5 +12,10 @@ return {
     leaning     = 0, -- 0 = not leaning, -1 = leaning left, 1 = leaning right
     
     surrendered = false,
+    
+    injured = false,
+    
+    cameraX = 0, 
+    cameraY = 0,
     -- Path: CharacterState.lua
 }

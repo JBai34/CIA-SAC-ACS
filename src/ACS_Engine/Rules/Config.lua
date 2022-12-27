@@ -81,9 +81,11 @@ local Config = {
 	
 	,WaterMark = true
 	
+	,MinimumInteractionDistance = 5
+	
 	,Blacklist = {1363303139, 112962460, 115267378, 496075583} 		--- Auto kick the player (via ID) when he tries to join
 	
-	,Version = "ACS 2.0 - R15"
+	,Version = "ACS 2.0 - R15 - Mod"
 }
 
 return Config
