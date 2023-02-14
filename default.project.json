@@ -25,7 +25,15 @@
         "$path": "src/server"
       }
     },
-
+    
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "$ignoreUnknownInstances": true,
+      "Server": {
+        "$path": "src/serverStorage"
+      }
+    },
+    
     "StarterPlayer": {
       "$className": "StarterPlayer",
 
