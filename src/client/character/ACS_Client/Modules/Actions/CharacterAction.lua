@@ -1,10 +1,12 @@
-local Debris = game:GetService("Debris")
+--[[
+	
+	CharacterAction is responsible for rendering all character actions, such as stance, leaning, etc.
 
+]]
+
+--=====
 local ReplicatedStorage= game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local TS = game:GetService("TweenService")
-local CAS = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
@@ -76,7 +78,7 @@ local function handleCamera(): ... any
 end
 
 function CharacterAction:Stand(): ...any
-	Stance:FireServer(Stances,Virar)
+	--Stance:FireServer(Stances,Virar)
 	
 	if CharacterState.steadyWalking then
 		Humanoid.WalkSpeed = Rules.SlowPaceWalkSpeed
@@ -94,7 +96,7 @@ function CharacterAction:Stand(): ...any
 end
 
 function CharacterAction:Crouch(): ...any
-	Stance:FireServer(Stances,Virar)
+	--Stance:FireServer(Stances,Virar)
 	
 	if script.Parent:GetAttribute("Injured") then
 		Humanoid.WalkSpeed = Rules.InjuredCrouchWalkSpeed
@@ -107,7 +109,7 @@ function CharacterAction:Crouch(): ...any
 end
 
 function CharacterAction:Prone(): ...any
-	Stance:FireServer(Stances,Virar)
+	--Stance:FireServer(Stances,Virar)
 	
 	if CharacterState.surrendered == true then
 		Humanoid.WalkSpeed = 0
@@ -119,16 +121,14 @@ function CharacterAction:Prone(): ...any
 	handleCamera()
 end
 
-function CharacterAction:Lean(leanDirection: number): ...any
-	Stance:FireServer(Stances,Virar) -- Virar is a number indicating which way the character is leaning
-	if leanDirection == 0 then
-		CharacterState.canLean = true
+function CharacterAction:Lean(newLeanDirecton: number): ...any
+	--Stance:FireServer(Stances,Virar) -- Virar is a number indicating which way the character is leaning
+	if CharacterState.leaning == newLeanDirecton then
 		CharacterState.leaning = 0
+			
 	else
-		if CharacterState.canLean then
-			CharacterState.canLean = false
-			CharacterState.leaning = leanDirection
-		end
+		CharacterState.leaning = newLeanDirecton
+	
 	end
 	handleCamera()
 end

@@ -48,7 +48,7 @@ local ArmModel 		= Engine:FindFirstChild("ArmModel")
 local GunModels 	= Engine:FindFirstChild("GunModels")
 local AttModels 	= Engine:FindFirstChild("AttModels")
 local AttModules  	= Engine:FindFirstChild("AttModules")
-local Rules			= Engine.Rules
+local Rules			= Engine:FindFirstChild("Rules")
 local PastaFx		= Engine:FindFirstChild("FX")
 local gameRules		         = require(Rules.Config)
 local SpringMod 	         = require(Mods.Spring)
@@ -568,8 +568,15 @@ function WeaponAction:CreateBullet()
 	end
 end
 
-function WeaponAction:Shoot()
-	if FirearmProps.WeaponData and FirearmProps.WeaponData.Type == "Gun" and not FirearmState.Shooting and not FirearmState.Reloading then
+function WeaponAction:Shoot(userInputState)
+	if (
+		FirearmProps.WeaponData and 
+		FirearmProps.WeaponData.Type == "Gun" and 
+		not FirearmState.Shooting and 
+		not FirearmState.Reloading and
+		userInputState == Enum.UserInputState.Begin and
+		ViewModelState.AnimDebounce == false
+	) then
 
 		if FirearmState.Reloading or InputState.runKeyDown or FirearmState.SafeMode or FirearmState.CheckingMag then
 			InputState.Mouse1down = false
@@ -738,6 +745,7 @@ function WeaponAction:Setup(tool)
 
 		ViewModelState.ViewModel = ArmModel:WaitForChild("Arms"):Clone()
 		ViewModelState.ViewModel.Name = "Viewmodel"
+		ViewModelState.ViewModel.Parent = Camera
 
 		local humanoid = Character:FindFirstChild("Humanoid")
 		local humanoidDesc = humanoid:GetAppliedDescription()
@@ -817,7 +825,7 @@ function WeaponAction:Setup(tool)
 
 		FirearmProps.Ammo 		= FirearmProps.WeaponData.AmmoInGun
 		FirearmProps.StoredAmmo = FirearmProps.WeaponData.StoredAmmo
-		FirearmProps.CurAimpart = FirearmProps.WeaponInHand:FindFirstChild("AimPart")
+		FirearmProps.CurAimpart 		= ViewModelState.WeaponInHand:FindFirstChild("AimPart")
 		
 		for _, key in pairs(ViewModelState.WeaponInHand:GetDescendants()) do
 			if key:IsA("BasePart") and key.Name == "FlashPoint" then
@@ -874,7 +882,7 @@ function WeaponAction:Setup(tool)
 
 		ViewModelState.WeaponInHand.Parent = ViewModelState.ViewModel	
 		if FirearmProps.Ammo <= 0 and FirearmProps.WeaponData.Type == "Gun" then
-			ViewModelState.Handle.Slide.C0 = FirearmProps.WeaponData.SlideEx:Inverse()
+			ViewModelState.WeaponInHand.Handle.Slide.C0 = FirearmProps.WeaponData.SlideEx:Inverse()
 		end
 		PlayAnimation:EquipAnim()
 		if FirearmProps.WeaponData and FirearmProps.WeaponData.Type ~= "Grenade" then

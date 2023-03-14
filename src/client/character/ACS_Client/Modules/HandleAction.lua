@@ -1,10 +1,9 @@
 --[[
 	This is the main action handler for the client. It handles all the input from the player and calls the appropriate weapon/character functions.
 	
-	This handler should act as a SETTER for the states of the weapon and character. All other corresponding modules should act as GETTERS for them,
-	with the exception of CharacterState.cameraX and CharacterState.cameraY, which are used to set the camera offset.
+	This handler should ONLY and ONLY read the action and redirect them to the appropriate function. It should not handle any logic.
 	
-	Jason
+	@Jason
 ]]
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
@@ -34,17 +33,6 @@ local InputState		= require(States.InputState)
 local Props				= Modules.Props
 local FirearmProps 		= require(Props.FirearmProps)
 
-local Functions				= Modules.Functions
-local RunCheck				= require(Functions.RunCheck)
-local CheckForHumanoid		= require(Functions.CheckForHumanoid)
-local Recoil				= require(Functions.Recoil)
-local CalculateBulletSpread = require(Functions.CalculateBulletSpread)
-local CalculateTracer		= require(Functions.CalculateTracer)
-local ResetMods				= require(Functions.ResetMods)
-
-local Others		 		= Modules.Others
-local ModTable 				= require(Others.ModTable)
-local GunFx					= require(Others.GunFX)
 
 -- ==
 --=====
@@ -57,24 +45,25 @@ local gameRules		= require(Rules.Config)
 local Camera = workspace.CurrentCamera
 local IgnoreModel = {Camera,Character,ACS_Workspace.Client,ACS_Workspace.Server}
 
-return function(actionName, inputState, inputObject)
+return function(actionName, userInputState, inputObject)
 
 	if actionName == "Fire" then
-		if inputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce then
-			WeaponAction:Shoot()
+		WeaponAction.Shoot(userInputState)
+		--if userInputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce then
+			
 
 			--[[
 			if FirearmProps.WeaponData.Type == "Grenade" then
 				WeaponAction:Grenade()
 			end
 			]]
-		elseif inputState == Enum.UserInputState.End then
+		--elseif userInputState == Enum.UserInputState.End then
 			InputState.Mouse1down = false
-		end
+		--end
 	end
 		
 
-	if actionName == "Reload" and inputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce and not FirearmState.CheckingMag and not FirearmState.Reloading then
+	if actionName == "Reload" and userInputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce and not FirearmState.CheckingMag and not FirearmState.Reloading then
 		if FirearmState.Jammed then
 			WeaponAction:Jammed()
 		else
@@ -82,50 +71,50 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "Reload" and inputState == Enum.UserInputState.Begin and FirearmState.Reloading and FirearmProps.WeaponData.ShellInsert then
+	if actionName == "Reload" and userInputState == Enum.UserInputState.Begin and FirearmState.Reloading and FirearmProps.WeaponData.ShellInsert then
 		FirearmState.CancelReload = true
 	end
 
-	if actionName == "CycleLaser" and inputState == Enum.UserInputState.Begin and FirearmProps.HasLaser then
+	if actionName == "CycleLaser" and userInputState == Enum.UserInputState.Begin and FirearmProps.HasLaser then
 		WeaponAction:SetLaser()
 	end
 	
-	if actionName == "CycleLight" and inputState == Enum.UserInputState.Begin and TorchAtt then
+	if actionName == "CycleLight" and userInputState == Enum.UserInputState.Begin and TorchAtt then
 		SetTorch()
 	end
 
-	if actionName == "CycleFiremode" and inputState == Enum.UserInputState.Begin and WeaponData and WeaponData.FireModes.ChangeFiremode then
+	if actionName == "CycleFiremode" and userInputState == Enum.UserInputState.Begin and WeaponData and WeaponData.FireModes.ChangeFiremode then
 		Firemode()
 	end
 
-	if actionName == "CycleAimpart" and inputState == Enum.UserInputState.Begin then
+	if actionName == "CycleAimpart" and userInputState == Enum.UserInputState.Begin then
 		SetAimpart()
 	end
 
-	if actionName == "ZeroUp" and inputState == Enum.UserInputState.Begin and WeaponData and WeaponData.EnableZeroing  then
+	if actionName == "ZeroUp" and userInputState == Enum.UserInputState.Begin and WeaponData and WeaponData.EnableZeroing  then
 		if WeaponData.CurrentZero < WeaponData.MaxZero then
 			WeaponInHand.Handle.Click:play()
 			WeaponData.CurrentZero = math.min(WeaponData.CurrentZero + WeaponData.ZeroIncrement, WeaponData.MaxZero) 
 		end
 	end
 
-	if actionName == "ZeroDown" and inputState == Enum.UserInputState.Begin and WeaponData and WeaponData.EnableZeroing  then
+	if actionName == "ZeroDown" and userInputState == Enum.UserInputState.Begin and WeaponData and WeaponData.EnableZeroing  then
 		if WeaponData.CurrentZero > 0 then
 			WeaponInHand.Handle.Click:play()
 			WeaponData.CurrentZero = math.max(WeaponData.CurrentZero - WeaponData.ZeroIncrement, 0) 
 		end
 	end
 
-	if actionName == "CheckMag" and inputState == Enum.UserInputState.Begin and not CheckingMag and not reloading and not InputState.runKeyDown and ViewModelState.AnimDebounce then
+	if actionName == "CheckMag" and userInputState == Enum.UserInputState.Begin and not CheckingMag and not reloading and not InputState.runKeyDown and ViewModelState.AnimDebounce then
 		CheckMagFunction()
 	end
 
-	if actionName == "ToggleBipod" and inputState == Enum.UserInputState.Begin and CanBipod then
+	if actionName == "ToggleBipod" and userInputState == Enum.UserInputState.Begin and CanBipod then
 
 		BipodActive = not BipodActive
 	end
 
-	if actionName == "NVG" and inputState == Enum.UserInputState.Begin and not NVGdebounce then
+	if actionName == "NVG" and userInputState == Enum.UserInputState.Begin and not NVGdebounce then
 		if Player.Character then
 			local helmet = Player.Character:FindFirstChild("Helmet")
 			if helmet then
@@ -143,7 +132,7 @@ return function(actionName, inputState, inputObject)
 		end
 	end
 
-	if actionName == "ADS" and inputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce then
+	if actionName == "ADS" and userInputState == Enum.UserInputState.Begin and ViewModelState.AnimDebounce then
 		if WeaponData and WeaponData.canAim and GunStance > -2 and not InputState.runKeyDown and not CheckingMag then
 			aimming = not aimming
 			ADS(aimming)
@@ -155,7 +144,7 @@ return function(actionName, inputState, inputObject)
 	end
 
 	--// STANCES \\--
-	if actionName == "Stand" and inputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
+	if actionName == "Stand" and userInputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
 		if CharacterState.stances == 0 then
 			CharacterState.stances = 1
 			CharacterAction:Crouch()
@@ -165,7 +154,7 @@ return function(actionName, inputState, inputObject)
 			CharacterAction:Stand()
 		end	
 		
-	elseif actionName == "Crouch" and inputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
+	elseif actionName == "Crouch" and userInputState == Enum.UserInputState.Begin and not CharacterState.swimming and not CharacterState.sitting and not InputState.runKeyDown then
 		if CharacterState.stances == 0 then
 			CharacterState.stances = 1
 			CharacterAction:Crouch()
@@ -177,44 +166,33 @@ return function(actionName, inputState, inputObject)
 			CharacterAction:Prone()
 		end
 		
-	elseif actionName == "ToggleWalk" and inputState == Enum.UserInputState.Begin and not InputState.runKeyDown then
+	elseif actionName == "ToggleWalk" and userInputState == Enum.UserInputState.Begin and not InputState.runKeyDown then
 		CharacterState.steadyWalking = not CharacterState.steadyWalking
 		
 		if CharacterState.stances == 0 then
 			CharacterAction:Stand()
 		end
 		
-	elseif actionName == "LeanLeft" and inputState == Enum.UserInputState.Begin and CharacterState.stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
-		if CharacterState.leaning == -1 then
-			CharacterState.leaning = 0
-		else
-			CharacterState.leaning = -1		
-		end
-		CharacterAction:Lean(CharacterState.leaning)
+	elseif actionName == "LeanLeft" and userInputState == Enum.UserInputState.Begin and CharacterState.stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
+		CharacterAction:Lean(-1)
 		
-	elseif actionName == "LeanRight" and inputState == Enum.UserInputState.Begin and CharacterState.stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
-		if CharacterState.leaning == 1 then
-			CharacterState.leaning = 0
-		else
-			CharacterState.leaning = 1
-		end
-		CharacterAction:Lean(CharacterState.leaning)
+	elseif actionName == "LeanRight" and userInputState == Enum.UserInputState.Begin and CharacterState.stances ~= 2 and not CharacterState.swimming and not InputState.runKeyDown and CharacterState.canLean then
+		CharacterAction:Lean(1)
 	end
 	--// STANCES \\--
 	
-	if actionName == "Run" and inputState == Enum.UserInputState.Begin and not CharacterState.running and not CharacterState.injured then
+	if actionName == "Run" and userInputState == Enum.UserInputState.Begin and not CharacterState.running and not CharacterState.injured then
 		InputState.runKeyDown 	= true
 		CharacterAction:Stand()
 		CharacterState.stances = 0
-		CharacterState.leaning = 0
 		CameraX = 0
 		CameraY = 0
-		CharacterAction:Lean(CharacterState.leaning)
+		CharacterAction:Lean(0)
 
 		Character.Humanoid.WalkSpeed = gameRules.RunWalkSpeed
 
 		if aimming then
-			aimming = false
+			aimming = falseq
 			ADS(aimming)
 		end
 
@@ -223,7 +201,7 @@ return function(actionName, inputState, inputObject)
 			Evt.GunStance:FireServer(GunStance,AnimData)
 			SprintAnim()
 		end
-	elseif actionName == "Run" and inputState == Enum.UserInputState.End and InputState.runKeyDown then
+	elseif actionName == "Run" and userInputState == Enum.UserInputState.End and InputState.runKeyDown then
 		InputState.runKeyDown 	= false
 		CharacterAction:Stand()
 		if not CheckingMag and not reloading and WeaponData and WeaponData.Type ~= "Grenade" and (GunStance == 0 or GunStance == 2 or GunStance == 3) then

@@ -45,7 +45,6 @@ local ArmModel 		= Engine:FindFirstChild("ArmModel")
 local GunModels 	= Engine:FindFirstChild("GunModels")
 local AttModels 	= Engine:FindFirstChild("AttModels")
 local AttModules  	= Engine:FindFirstChild("AttModules")
-local Rules			= Engine:FindFirstChild("GameRules")
 local PastaFx		= Engine:FindFirstChild("FX")
 --=========================================================
 local EquipAction = {}
